@@ -4,6 +4,8 @@
 
 import Tkinter as tk
 
+WINHEIGHT = 450
+WINWIDTH = 296
 
 class simpleapp_tk(tk.Tk):
 
@@ -15,6 +17,9 @@ class simpleapp_tk(tk.Tk):
     def initialize(self):
         # Create the grid layout manager
         self.grid()
+        # This thing is not going to be resizable
+        self.resizable(width=False, height=False)
+        self.geometry('{}x{}'.format(WINWIDTH,WINHEIGHT))
 
         # Create listbox with vertical and horizontal scroll
         # Create the vertical scroll
@@ -24,7 +29,9 @@ class simpleapp_tk(tk.Tk):
         self.xScroll = tk.Scrollbar(self, orient=tk.HORIZONTAL)
         self.xScroll.grid(row=1, column=0, sticky=tk.E+tk.W)
         # Create the listbox
-        self.listbox = tk.Listbox(self,
+        self.listbox = tk.Listbox(self, activestyle='none',
+                height=20,
+                width=35,
                 xscrollcommand=self.xScroll.set,
                 yscrollcommand=self.yScroll.set)
         self.listbox.grid(row=0, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
