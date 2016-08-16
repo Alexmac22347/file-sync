@@ -2,13 +2,13 @@
 # Code from:
 # http://sebsauvage.net/python/gui/#our_project
 
-import Tkinter
+import Tkinter as tk
 
 
-class simpleapp_tk(Tkinter.Tk):
+class simpleapp_tk(tk.Tk):
 
     def __init__(self, parent):
-        Tkinter.Tk.__init__(self, parent)
+        tk.Tk.__init__(self, parent)
         self.parent = parent
         self.initialize()
 
@@ -16,46 +16,26 @@ class simpleapp_tk(Tkinter.Tk):
         # Create the grid layout manager
         self.grid()
 
-        # Add the text entry box
-        # Remember what was entered into the box
-        self.entryVariable = Tkinter.StringVar()
-        self.entry = Tkinter.Entry(self, textvariable=self.entryVariable)
-        self.entry.grid(column=0, row=0, sticky='EW')
-        # Add handler for when user presses enter
-        self.entry.bind("<Return>", self.OnPressEnter)
-        self.entryVariable.set(u"Enter text here")
+        # Create listbox with vertical and horizontal scroll
+        # Create the vertical scroll
+        self.yScroll = tk.Scrollbar(self, orient=tk.VERTICAL)
+        self.yScroll.grid(row=0, column=1, sticky=tk.N+tk.S)
+        # Create the horizontal scroll
+        self.xScroll = tk.Scrollbar(self, orient=tk.HORIZONTAL)
+        self.xScroll.grid(row=1, column=0, sticky=tk.E+tk.W)
+        # Create the listbox
+        self.listbox = tk.Listbox(self,
+                xscrollcommand=self.xScroll.set,
+                yscrollcommand=self.yScroll.set)
+        self.listbox.grid(row=0, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.xScroll['command'] = self.listbox.xview
+        self.yScroll['command'] = self.listbox.yview
 
-        # Add the button
-        # Also add handler when this button is clicked
-        button = Tkinter.Button(self, text=u"Click Me",
-                                command=self.OnButtonClick)
-        button.grid(column=1, row=0)
-
-        # Create the blue label thing
-        self.labelVariable = Tkinter.StringVar()
-        label = Tkinter.Label(self, textvariable=self.labelVariable,
-                              anchor="w", fg="white", bg="blue")
-        label.grid(column=0, row=1, columnspan=2, sticky='EW')
-
-        # Tell the layout manager to resize its columns and rows when
-        # the window is resized
-        self.grid_columnconfigure(0, weight=1)
-        # Only allow vertical resizing
-        self.resizable(True, False)
-        # Dont resize the window if long text is entered
-        self.update()
-        self.geometry(self.geometry())
-
+        for i in range(20):
+            self.listbox.insert(i,"Hello {}".format(i))
 
     def OnButtonClick(self):
-        self.labelVariable.set(self.entryVariable.get()) 
-                               
         print "You clicked the button !"
-
-    def OnPressEnter(self, event):
-        self.labelVariable.set(self.entryVariable.get())
-        print "You Pressed enter !"
-
 
 if __name__ == "__main__":
     app = simpleapp_tk(None)
