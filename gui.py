@@ -19,8 +19,6 @@ class gui(tk.Tk):
 
 
     def __init__(self, parent):
-        # This is set if options setting is pressed
-        self.settingsOpen = False
         # The program starts is the "Add to remote" state
         self.currentState = self.State.AddToRemote
 
@@ -70,6 +68,7 @@ class gui(tk.Tk):
     # This will draw the GUI based on the current state
     def showGUI(self):
         # These things here will always be visible
+        # if we're not in settings
         self.listbox.grid(row=0, column=0, sticky='NSEW')
         self.settingsButton.grid(row=2, column=0, sticky='EN')
         self.updateAllButton.grid(row=2, column=0, sticky='WN')
@@ -77,7 +76,7 @@ class gui(tk.Tk):
             row=3, column=0, sticky='WN')
 
         if self.currentState == self.State.AddToRemote:
-            print "We're in \"add to remote \"state"
+            return
 
         if self.currentState == self.State.RemoveFromRemote:
             pass
@@ -90,7 +89,7 @@ class gui(tk.Tk):
 
     # Various event handlers
     def onSettingsButtonClick(self):
-        print "You clicked the settings button"
+        print "You clicked the settings icon"
 
     def onUpdateAllButtonClick(self):
         print "You selected all"
