@@ -76,23 +76,50 @@ class gui(tk.Tk):
             row=3, column=0, sticky='WN')
 
         if self.currentState == self.State.AddToRemote:
+            self.updateAllButton["text"] = "Add all to remote"
+            self.updateSelectedButton["text"] = "Add selected to remote"
             return
 
         if self.currentState == self.State.RemoveFromRemote:
-            pass
+            self.updateAllButton["text"] = "Remove all from remote"
+            self.updateSelectedButton["text"] = "Remove selected from remote"
+            return
 
         if self.currentState == self.State.AddToLocal:
-            pass
+            self.updateAllButton["text"] = "Add all to local"
+            self.updateSelectedButton["text"] = "Add selected to local"
+            return
 
         if self.currentState == self.State.RemoveFromLocal:
-            pass
+            self.updateAllButton["text"] = "Remove all from local"
+            self.updateSelectedButton["text"] = "Remove selected from local"
+            return
 
     # Various event handlers
     def onSettingsButtonClick(self):
         print "You clicked the settings icon"
+        print "currentState is {}".format(self.currentState)
 
     def onUpdateAllButtonClick(self):
-        print "You selected all"
+        if self.currentState == self.State.AddToRemote:
+            self.currentState = self.State.RemoveFromRemote
+        elif self.currentState == self.State.RemoveFromRemote:
+            self.currentState = self.State.AddToLocal
+        elif self.currentState == self.State.AddToLocal:
+            self.currentState = self.State.RemoveFromLocal
+        elif self.currentState == self.State.RemoveFromLocal:
+            exit()
+
+        self.showGUI()
 
     def onUpdateSelectedButton(self):
-        print "You selected specific files"
+        if self.currentState == self.State.AddToRemote:
+            self.currentState = self.State.RemoveFromRemote
+        elif self.currentState == self.State.RemoveFromRemote:
+            self.currentState = self.State.AddToLocal
+        elif self.currentState == self.State.AddToLocal:
+            self.currentState = self.State.RemoveFromLocal
+        elif self.currentState == self.State.RemoveFromLocal:
+            exit()
+
+        self.showGUI()
