@@ -2,7 +2,7 @@
 
 import Tkinter as tk
 
-WINHEIGHT = 450
+WINHEIGHT = 445
 WINWIDTH = 296
 
 
@@ -17,12 +17,11 @@ class gui(tk.Tk):
         AddToLocal = 3
         RemoveFromLocal = 4
 
-
     def __init__(self, parent):
         # The program starts is the "Add to remote" state
         self.currentState = self.State.AddToRemote
 
-        #TODO: Load the right local and remote directories
+        # TODO: Load the right local and remote directories
         tk.Tk.__init__(self, parent)
         self.parent = parent
         self.initializeWidgets()
@@ -58,12 +57,21 @@ class gui(tk.Tk):
 
         # Create the "update all" button
         self.updateAllButton = tk.Button(
-            self, text="Add all to remote", command=self.onUpdateAllButtonClick)
+            self, text="Add all to remote", command=self.onUpdateAllButtonClick,
+            width=28)
 
         # Create the "update selected" button
         self.updateSelectedButton = tk.Button(
             self, text="Add selected to remote",
-            command=self.onUpdateSelectedButton)
+            command=self.onUpdateSelectedButtonClick)
+
+        # Create the "skip" button
+        self.skipButton = tk.Button(
+            self, text="Skip", command=self.onSkipButtonClick)
+
+        # Create the info box
+        self.infoBox = tk.Label(
+            self, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     # This will draw the GUI based on the current state
     def showGUI(self):
@@ -71,9 +79,11 @@ class gui(tk.Tk):
         # if we're not in settings
         self.listbox.grid(row=0, column=0, sticky='NSEW')
         self.settingsButton.grid(row=2, column=0, sticky='EN')
-        self.updateAllButton.grid(row=2, column=0, sticky='WN')
+        self.updateAllButton.grid(row=2, column=0, sticky='W')
         self.updateSelectedButton.grid(
-            row=3, column=0, sticky='WN')
+            row=3, column=0, sticky='EW')
+        self.skipButton.grid(row=4, column=0, sticky='EW')
+        self.infoBox.grid(row=5, column=0, sticky='EW')
 
         if self.currentState == self.State.AddToRemote:
             self.updateAllButton["text"] = "Add all to remote"
@@ -112,7 +122,19 @@ class gui(tk.Tk):
 
         self.showGUI()
 
-    def onUpdateSelectedButton(self):
+    def onUpdateSelectedButtonClick(self):
+        if self.currentState == self.State.AddToRemote:
+            self.currentState = self.State.RemoveFromRemote
+        elif self.currentState == self.State.RemoveFromRemote:
+            self.currentState = self.State.AddToLocal
+        elif self.currentState == self.State.AddToLocal:
+            self.currentState = self.State.RemoveFromLocal
+        elif self.currentState == self.State.RemoveFromLocal:
+            exit()
+
+        self.showGUI()
+
+    def onSkipButtonClick(self):
         if self.currentState == self.State.AddToRemote:
             self.currentState = self.State.RemoveFromRemote
         elif self.currentState == self.State.RemoveFromRemote:
