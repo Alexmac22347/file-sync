@@ -48,10 +48,10 @@ class MainPage(tk.Frame):
     def __init__(self, parent, controller):
         self.currentState = self.State.AddToRemote
         tk.Frame.__init__(self, parent)
-        self.initializeWidgets()
+        self.initializeWidgets(controller)
         self.showGUI()
 
-    def initializeWidgets(self):
+    def initializeWidgets(self, controller):
         # Create the grid layout manager
         self.grid()
 
@@ -74,7 +74,7 @@ class MainPage(tk.Frame):
         # Add a settings button
         self.settingsIcon = tk.BitmapImage(file='settings_icon.xbm')
         self.settingsButton = tk.Button(
-            self, image=self.settingsIcon, command=self.onSettingsButtonClick)
+                self, image=self.settingsIcon, command=lambda: controller.showFrame(SettingsPage))
 
         # Create the "update all" button
         self.updateAllButton = tk.Button(
@@ -128,8 +128,7 @@ class MainPage(tk.Frame):
 
     # Various event handlers
     def onSettingsButtonClick(self):
-        print "You clicked the settings icon"
-        print "currentState is {}".format(self.currentState)
+        gui.showFrame(SettingsPage)
 
     def onUpdateAllButtonClick(self):
         if self.currentState == self.State.AddToRemote:
