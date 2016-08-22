@@ -9,9 +9,6 @@ WINWIDTH = 296
 class gui(tk.Tk):
 
     def __init__(self, *args, **kwargs):
-        # TODO: put this in the MainPage class
-        # The program starts is the "Add to remote" state
-
         tk.Tk.__init__(self, *args, **kwargs)
         container = tk.Frame(self)
         container.grid()
@@ -74,11 +71,15 @@ class MainPage(tk.Frame):
         # Add a settings button
         self.settingsIcon = tk.BitmapImage(file='settings_icon.xbm')
         self.settingsButton = tk.Button(
-                self, image=self.settingsIcon, command=lambda: controller.showFrame(SettingsPage))
+            self,
+            image=self.settingsIcon,
+            command=lambda: controller.showFrame(SettingsPage))
 
         # Create the "update all" button
         self.updateAllButton = tk.Button(
-            self, text="Add all to remote", command=self.onUpdateAllButtonClick,
+            self,
+            text="Add all to remote",
+            command=self.onUpdateAllButtonClick,
             width=28)
 
         # Create the "update selected" button
@@ -170,4 +171,46 @@ class MainPage(tk.Frame):
 class SettingsPage(tk.Frame):
 
     def __init__(self, parent, controller):
+        self.localDirectory = ""
+        self.remoteDirectory = ""
         tk.Frame.__init__(self, parent)
+        self.initializeWidgets(controller)
+        self.showGUI()
+
+    def initializeWidgets(self, controller):
+        # Create the grid layout manager
+        self.grid()
+
+        # Create the "cancel" button
+        self.cancelButton = tk.Button(
+            self,
+            text="Cancel",
+            width=15,
+            command=lambda: self.onCancelButtonClick(controller))
+
+        # Create the "save" button
+        self.saveButton = tk.Button(
+            self,
+            text="Save",
+            width=15,
+            command=lambda: self.onSaveButtonClick(controller))
+
+        # Create the local directory text entry box
+        self.localDirectoryBox = tk.Entry(
+            self, width=35, textvariable=self.localDirectory)
+
+        # Create remote directory text entry box
+        self.remoteDirectoryBox = tk.Entry(
+            self, width=35, textvariable=self.remoteDirectory)
+
+    def showGUI(self):
+        self.cancelButton.place(rely=1.0, relx=0.0, x=0, y=0, anchor='sw')
+        self.saveButton.place(rely=1.0, relx=1.0, x=0, y=0, anchor='se')
+        self.localDirectoryBox.grid(row=0)
+        self.remoteDirectoryBox.grid(row=1)
+
+    def onCancelButtonClick(self, controller):
+        controller.showFrame(MainPage)
+
+    def onSaveButtonClick(self, controller):
+        controller.showFrame(MainPage)
