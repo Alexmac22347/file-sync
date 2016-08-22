@@ -8,6 +8,34 @@ WINWIDTH = 296
 
 class gui(tk.Tk):
 
+    def __init__(self, *args, **kwargs):
+        # TODO: put this in the MainPage class
+        # The program starts is the "Add to remote" state
+
+        tk.Tk.__init__(self, *args, **kwargs)
+        container = tk.Frame(self)
+        container.grid()
+        # This thing is not going to be resizable
+        self.resizable(width=False, height=False)
+        self.geometry('{}x{}'.format(WINWIDTH, WINHEIGHT))
+
+        # This dictionary contains the two Frames,
+        # MainPage and SettingsPage
+        self.frames = {}
+        for F in (MainPage, SettingsPage):
+            frame = F(container, self)
+            self.frames[F] = frame
+            frame.grid(row=0, column=0, sticky='nsew')
+
+        self.showFrame(MainPage)
+
+    def showFrame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
+
+
+class MainPage(tk.Frame):
+
     # This is used to represent what part of the program we are in.
     # It will help determine what to do when a button is pressed,
     # and what files to display in the list box
@@ -17,22 +45,15 @@ class gui(tk.Tk):
         AddToLocal = 3
         RemoveFromLocal = 4
 
-    def __init__(self, parent):
-        # The program starts is the "Add to remote" state
+    def __init__(self, parent, controller):
         self.currentState = self.State.AddToRemote
-
-        # TODO: Load the right local and remote directories
-        tk.Tk.__init__(self, parent)
-        self.parent = parent
+        tk.Frame.__init__(self, parent)
         self.initializeWidgets()
         self.showGUI()
 
     def initializeWidgets(self):
         # Create the grid layout manager
         self.grid()
-        # This thing is not going to be resizable
-        self.resizable(width=False, height=False)
-        self.geometry('{}x{}'.format(WINWIDTH, WINHEIGHT))
 
         # Create listbox with vertical and horizontal scroll
         # Create the vertical scroll
@@ -145,3 +166,9 @@ class gui(tk.Tk):
             exit()
 
         self.showGUI()
+
+
+class SettingsPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
