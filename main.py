@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# Code from:
-# http://sebsauvage.net/python/gui/#our_project
 
 import gui
 

@@ -1,9 +1,10 @@
-#!/usr/bin/python
-
 import Tkinter as tk
+import config
 
 WINHEIGHT = 445
 WINWIDTH = 296
+
+config = config.config()
 
 
 class gui(tk.Tk):
@@ -25,6 +26,18 @@ class gui(tk.Tk):
             frame.grid(row=0, column=0, sticky='nsew')
 
         self.showFrame(MainPage)
+
+        if not config.values:
+            # TODO: prompt user for paths
+            print "Initializing configuration file"
+            config.values['paths'] = {}
+            config.values['paths']['local'] = '/home/alex/Music/'
+            # TODO: this will be a path which starts on the usb device
+            config.values['paths']['remote'] = ''
+            config.writeConfig()
+
+        else:
+            config.readConfig()
 
     def showFrame(self, cont):
         frame = self.frames[cont]
@@ -108,23 +121,23 @@ class MainPage(tk.Frame):
         self.infoBox.grid(row=5, column=0, sticky='EW')
 
         if self.currentState == self.State.AddToRemote:
-            self.updateAllButton["text"] = "Add all to remote"
-            self.updateSelectedButton["text"] = "Add selected to remote"
+            self.updateAllButton['text'] = "Add all to remote"
+            self.updateSelectedButton['text'] = "Add selected to remote"
             return
 
         if self.currentState == self.State.RemoveFromRemote:
-            self.updateAllButton["text"] = "Remove all from remote"
-            self.updateSelectedButton["text"] = "Remove selected from remote"
+            self.updateAllButton['text'] = "Remove all from remote"
+            self.updateSelectedButton['text'] = "Remove selected from remote"
             return
 
         if self.currentState == self.State.AddToLocal:
-            self.updateAllButton["text"] = "Add all to local"
-            self.updateSelectedButton["text"] = "Add selected to local"
+            self.updateAllButton['text'] = "Add all to local"
+            self.updateSelectedButton['text'] = "Add selected to local"
             return
 
         if self.currentState == self.State.RemoveFromLocal:
-            self.updateAllButton["text"] = "Remove all from local"
-            self.updateSelectedButton["text"] = "Remove selected from local"
+            self.updateAllButton['text'] = "Remove all from local"
+            self.updateSelectedButton['text'] = "Remove selected from local"
             return
 
     # Various event handlers
@@ -210,16 +223,13 @@ class SettingsPage(tk.Frame):
             self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
-        self.localLabel.grid(row=0, column=0, sticky='w')
-        self.remoteLabel.grid(row=1, column=0, sticky='w')
-        self.localDirectoryBox.grid(row=0, column=1, sticky='ew')
-        self.remoteDirectoryBox.grid(row=1, column=1, sticky='ew')
+        self.localLabel.grid(row=0, column=0, sticky='W')
+        self.remoteLabel.grid(row=1, column=0, sticky='W')
+        self.localDirectoryBox.grid(row=0, column=1, sticky='EW')
+        self.remoteDirectoryBox.grid(row=1, column=1, sticky='EW')
         self.cancelButton.place(rely=1.0, relx=0.0, x=0, y=-26, anchor='sw')
         self.saveButton.place(rely=1.0, relx=1.0, x=0, y=-26, anchor='se')
         self.infoBox.place(rely=1.0, relx=0.5, x=0, y=-10, anchor='center')
 
     def onCancelButtonClick(self, controller):
-        controller.showFrame(MainPage)
-
-    def onSaveButtonClick(self, controller):
         controller.showFrame(MainPage)
