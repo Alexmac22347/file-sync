@@ -181,33 +181,42 @@ class SettingsPage(tk.Frame):
         # Create the grid layout manager
         self.grid()
 
-        # Create the "cancel" button
+        # Create the Local and Remote labels
+        self.localLabel = tk.Label(
+                self, text="Local:")
+        self.remoteLabel = tk.Label(
+                self, text="Remote:")
+
+        # Create the local and remote directory text entry boxes
+        self.localDirectoryBox = tk.Entry(
+            self, width=29, textvariable=self.localDirectory)
+        self.remoteDirectoryBox = tk.Entry(
+            self, width=29, textvariable=self.remoteDirectory)
+
+        # Create the cancel and save buttons
         self.cancelButton = tk.Button(
             self,
             text="Cancel",
             width=15,
             command=lambda: self.onCancelButtonClick(controller))
-
-        # Create the "save" button
         self.saveButton = tk.Button(
             self,
             text="Save",
             width=15,
             command=lambda: self.onSaveButtonClick(controller))
 
-        # Create the local directory text entry box
-        self.localDirectoryBox = tk.Entry(
-            self, width=35, textvariable=self.localDirectory)
-
-        # Create remote directory text entry box
-        self.remoteDirectoryBox = tk.Entry(
-            self, width=35, textvariable=self.remoteDirectory)
+        # Create the infobox
+        self.infoBox = tk.Label(
+            self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
-        self.cancelButton.place(rely=1.0, relx=0.0, x=0, y=0, anchor='sw')
-        self.saveButton.place(rely=1.0, relx=1.0, x=0, y=0, anchor='se')
-        self.localDirectoryBox.grid(row=0)
-        self.remoteDirectoryBox.grid(row=1)
+        self.localLabel.grid(row=0, column=0, sticky='w')
+        self.remoteLabel.grid(row=1, column=0, sticky='w')
+        self.localDirectoryBox.grid(row=0, column=1, sticky='ew')
+        self.remoteDirectoryBox.grid(row=1, column=1, sticky='ew')
+        self.cancelButton.place(rely=1.0, relx=0.0, x=0, y=-26, anchor='sw')
+        self.saveButton.place(rely=1.0, relx=1.0, x=0, y=-26, anchor='se')
+        self.infoBox.place(rely=1.0, relx=0.5, x=0, y=-10, anchor='center')
 
     def onCancelButtonClick(self, controller):
         controller.showFrame(MainPage)
