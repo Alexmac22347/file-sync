@@ -10,7 +10,7 @@ class config:
         self.configParser = ConfigParser.SafeConfigParser()
         self.values = {}
         try:
-            self.configParser.read(open(CONFIGFILENAME))
+            self.configParser.read(CONFIGFILENAME)
         except IOError:
             open('{}'.format(CONFIGFILENAME), 'w')
             self.configParser.read(open(CONFIGFILENAME))
@@ -18,9 +18,9 @@ class config:
     def readConfig(self):
         # From: http://stackoverflow.com/questions/3220670/read-all-the-contents-in-ini-file-into-dictionary-with-python
         for section in self.configParser.sections():
-            self.sections[section] = {}
+            self.values[section] = {}
             for option in self.configParser.options(section):
-                self.values[section][option] = config.get(section, option)
+                self.values[section][option] = self.configParser.get(section, option)
 
     def writeConfig(self):
         for section in self.values.keys():
