@@ -4,6 +4,8 @@ import config
 WINHEIGHT = 445
 WINWIDTH = 296
 
+# TODO: Is this global? Ie, read in one class, see the difference in
+# another class
 config = config.config()
 
 
@@ -11,11 +13,13 @@ class gui(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        container = tk.Frame(self)
-        container.grid()
+
         # This thing is not going to be resizable
         self.resizable(width=False, height=False)
         self.geometry('{}x{}'.format(WINWIDTH, WINHEIGHT))
+
+        container = tk.Frame(self)
+        container.grid()
 
         # This dictionary contains the two Frames,
         # MainPage and SettingsPage
@@ -39,10 +43,10 @@ class gui(tk.Tk):
             config.writeConfig()
             config.readConfig()
 
-
     def showFrame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
+        frame.showGUI()
 
 
 class MainPage(tk.Frame):
@@ -60,7 +64,6 @@ class MainPage(tk.Frame):
         self.currentState = self.State.AddToRemote
         tk.Frame.__init__(self, parent)
         self.initializeWidgets(controller)
-        self.showGUI()
 
     def initializeWidgets(self, controller):
         # Create the grid layout manager
@@ -87,7 +90,7 @@ class MainPage(tk.Frame):
         self.settingsButton = tk.Button(
             self,
             image=self.settingsIcon,
-            command=lambda: controller.showFrame(SettingsPage))
+            command=lambda: self.onSettingsButtonClick(controller))
 
         # Create the "update all" button
         self.updateAllButton = tk.Button(
@@ -142,8 +145,8 @@ class MainPage(tk.Frame):
             return
 
     # Various event handlers
-    def onSettingsButtonClick(self):
-        gui.showFrame(SettingsPage)
+    def onSettingsButtonClick(self, controller):
+        controller.showFrame(SettingsPage)
 
     def onUpdateAllButtonClick(self):
         if self.currentState == self.State.AddToRemote:
@@ -189,7 +192,6 @@ class SettingsPage(tk.Frame):
         self.remoteDirectory = tk.StringVar()
         tk.Frame.__init__(self, parent)
         self.initializeWidgets(controller)
-        self.showGUI()
 
     def initializeWidgets(self, controller):
         # Create the grid layout manager
