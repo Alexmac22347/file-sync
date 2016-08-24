@@ -240,3 +240,11 @@ class SettingsPage(tk.Frame):
 
     def onCancelButtonClick(self, controller):
         controller.showFrame(MainPage)
+
+    def onSaveButtonClick(self, controller):
+        self.localDirectory.get()
+        self.remoteDirectory.get()
+        config.values['paths']['local'] = self.localDirectory.get()
+        config.values['paths']['remote'] = self.remoteDirectory.get()
+        config.writeConfig()
+        controller.showFrame(MainPage)
