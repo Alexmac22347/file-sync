@@ -29,14 +29,12 @@ class gui(tk.Tk):
 
         # Read the config file. If it is
         # empty, initialize it
-        global config
         config.readConfig()
         if not config.values:
             # TODO: prompt user for paths
             print "Initializing configuration file"
             config.values['paths'] = {}
             config.values['paths']['local'] = '/home/alex/Music/'
-            # TODO: this will be a path which starts on the usb device
             config.values['paths']['remote'] = 'SD\ Card/Music/'
             config.writeConfig()
             config.readConfig()
@@ -187,9 +185,8 @@ class MainPage(tk.Frame):
 class SettingsPage(tk.Frame):
 
     def __init__(self, parent, controller):
-        global config
-        self.localDirectory = config.values['paths']['local'] 
-        self.remoteDirectory = config.values['paths']['remote']
+        self.localDirectory = tk.StringVar()
+        self.remoteDirectory = tk.StringVar()
         tk.Frame.__init__(self, parent)
         self.initializeWidgets(controller)
         self.showGUI()
@@ -227,11 +224,13 @@ class SettingsPage(tk.Frame):
             self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
+        config.readConfig()
+        self.localDirectory.set(config.values['paths']['local'])
+        self.remoteDirectory.set(config.values['paths']['remote'])
+
         self.localLabel.grid(row=0, column=0, sticky='W')
         self.remoteLabel.grid(row=1, column=0, sticky='W')
         self.localDirectoryBox.grid(row=0, column=1, sticky='EW')
-        self.localDirectoryBox.set(self.localDirectory)
-        self.remoteDirectoryBox.set(self.remoteDirectory)
         self.remoteDirectoryBox.grid(row=1, column=1, sticky='EW')
         self.cancelButton.place(rely=1.0, relx=0.0, x=0, y=-26, anchor='sw')
         self.saveButton.place(rely=1.0, relx=1.0, x=0, y=-26, anchor='se')
