@@ -4,7 +4,7 @@ import config
 WINHEIGHT = 445
 WINWIDTH = 296
 
-# TODO: Is this global? Ie, read in one class, see the difference in
+# TODO: Is this global? Ie, read/mutate in one class, see the difference in
 # another class
 config = config.config()
 
@@ -37,9 +37,9 @@ class gui(tk.Tk):
         if not config.values:
             # TODO: prompt user for paths
             print "Initializing configuration file"
-            config.values['paths'] = {}
-            config.values['paths']['local'] = '/home/alex/Music/'
-            config.values['paths']['remote'] = 'SD\ Card/Music/'
+            config.values['settings'] = {}
+            config.values['settings']['local'] = '/home/alex/Music/'
+            config.values['settings']['remote'] = 'Card/Music/'
             config.writeConfig()
             config.readConfig()
 
@@ -115,7 +115,6 @@ class MainPage(tk.Frame):
     # This will draw the GUI based on the current state
     def showGUI(self):
         # These things here will always be visible
-        # if we're not in settings
         self.listbox.grid(row=0, column=0, sticky='NSEW')
         self.settingsButton.grid(row=2, column=0, sticky='EN')
         self.updateAllButton.grid(row=2, column=0, sticky='W')
@@ -199,9 +198,9 @@ class SettingsPage(tk.Frame):
 
         # Create the Local and Remote labels
         self.localLabel = tk.Label(
-                self, text="Local:")
+            self, text="Local:")
         self.remoteLabel = tk.Label(
-                self, text="Remote:")
+            self, text="Remote:")
 
         # Create the local and remote directory text entry boxes
         self.localDirectoryBox = tk.Entry(
@@ -227,8 +226,8 @@ class SettingsPage(tk.Frame):
 
     def showGUI(self):
         config.readConfig()
-        self.localDirectory.set(config.values['paths']['local'])
-        self.remoteDirectory.set(config.values['paths']['remote'])
+        self.localDirectory.set(config.values['settings']['local'])
+        self.remoteDirectory.set(config.values['settings']['remote'])
 
         self.localLabel.grid(row=0, column=0, sticky='W')
         self.remoteLabel.grid(row=1, column=0, sticky='W')
@@ -244,7 +243,7 @@ class SettingsPage(tk.Frame):
     def onSaveButtonClick(self, controller):
         self.localDirectory.get()
         self.remoteDirectory.get()
-        config.values['paths']['local'] = self.localDirectory.get()
-        config.values['paths']['remote'] = self.remoteDirectory.get()
+        config.values['settings']['local'] = self.localDirectory.get()
+        config.values['settings']['remote'] = self.remoteDirectory.get()
         config.writeConfig()
         controller.showFrame(MainPage)
