@@ -1,12 +1,13 @@
 import Tkinter as tk
 import config
+import file_syncer
 
 WINHEIGHT = 445
 WINWIDTH = 296
 
-# TODO: Is this global? Ie, read/mutate in one class, see the difference in
-# another class
-config = config.config()
+# Use a global config class
+# to read from disk, and see that change in all classes/pages
+config = config.globalConfig
 
 
 class gui(tk.Tk):
@@ -40,7 +41,17 @@ class gui(tk.Tk):
             config.values['settings'] = {}
             config.values['settings']['local'] = '/home/alex/Music/'
             config.values['settings']['remote'] = 'Card/Music/'
+
+            config.values['files'] = {}
+            config.values['files']['local'] = ""
+            config.values['files']['remote'] = ""
+            for filename in file_syncer.getLocalFileNames(config.values['settings']['local']):
+                config.values['files']['local'] += filename + "\n"
+            for filename in file_syncer.getRemoteFileNames(config.values['settings']['remote']):
+                config.values['files']['remote'] += filename + "\n"
+
             config.writeConfig()
+            # TODO: This is probably pointless
             config.readConfig()
 
     def showFrame(self, cont):
@@ -225,7 +236,6 @@ class SettingsPage(tk.Frame):
             self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
-        config.readConfig()
         self.localDirectory.set(config.values['settings']['local'])
         self.remoteDirectory.set(config.values['settings']['remote'])
 

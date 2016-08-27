@@ -47,6 +47,3 @@ def deleteFromRemote():
 
 def deleteFromLocal():
     pass
-
-for filename in getRemoteFileNames('Card/Music/Songs/'):
-    print filename

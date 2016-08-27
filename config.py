@@ -33,3 +33,5 @@ class config:
 
         with open(CONFIGFILENAME, 'w') as f:
             self.configParser.write(f)
+
+globalConfig = config()
