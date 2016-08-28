@@ -42,8 +42,8 @@ class gui(tk.Tk):
                 config.values['files']['local'] += filename + "\n"
             for filename in file_syncer.getRemoteFileNames(config.values['settings']['remote']):
                 config.values['files']['remote'] += filename + "\n"
-
             config.writeConfig()
+
 
         # This dictionary contains the two Frames,
         # MainPage and SettingsPage
@@ -188,24 +188,71 @@ class MainPage(tk.Frame):
 
     def onUpdateAllButtonClick(self):
         if self.currentState == self.State.AddToRemote:
+            file_syncer.copyToRemote(self.listbox.get(0, last=None),
+                    config.values['settings']['local'],
+                    config.values['settings']['remote'])
+            # TODO: Think about this. Is it correct?
+            for filename in self.listbox.get(0, last=None):
+                config.values['files']['local'] += filename
+                # TODO: Avoid possible duplications
+                if filename not in config.values['files']['remote']:
+                    config.values['files']['remote'] += filename
+
             self.currentState = self.State.RemoveFromRemote
+
         elif self.currentState == self.State.RemoveFromRemote:
+            file_syncer.deleteFromRemote(self.listbox.get(0, last=None),
+                    config.values['settings']['local'],
+                    config.values['settings']['remote'])
+            for filename in self.listbox.get(0, last=None):
+                # TODO: Test this
+                config.values['files']['local'].replace(filename, "")           
+                config.values['files']['remote'].replace(filename, "")           
+
             self.currentState = self.State.AddToLocal
+
         elif self.currentState == self.State.AddToLocal:
+            file_syncer.copyToLocal(self.listbox.get(0, last=None),
+                    config.values['settings']['remote'],
+                    config.values['settings']['local'])
+            # TODO: Think about this. Is it correct?
+            for filename in self.listbox.get(0, last=None):
+                config.values['files']['remote'] += filename
+                # TODO: Avoid possible duplications
+                if filename not in config.values['files']['local']:
+                    config.values['files']['local'] += filename
+
             self.currentState = self.State.RemoveFromLocal
+
         elif self.currentState == self.State.RemoveFromLocal:
+            file_syncer.deleteFromLocal(self.listbox.get(0, last=None),
+                    config.values['settings']['remote'],
+                    config.values['settings']['local'])
+            for filename in self.listbox.get(0, last=None):
+                # TODO: Test this
+                config.values['files']['remote'].replace(filename, "")           
+                config.values['files']['local'].replace(filename, "")           
+
             exit()
 
+        config.writeConfig()
         self.showGUI()
 
     def onUpdateSelectedButtonClick(self):
         if self.currentState == self.State.AddToRemote:
+            file_syncer.copyToRemote(self.listboxcurselection())
             self.currentState = self.State.RemoveFromRemote
+
         elif self.currentState == self.State.RemoveFromRemote:
+            file_syncer.copyToRemote(self.listboxcurselection())
             self.currentState = self.State.AddToLocal
+
         elif self.currentState == self.State.AddToLocal:
+            file_syncer.copyToRemote(self.listboxcurselection())
             self.currentState = self.State.RemoveFromLocal
+
         elif self.currentState == self.State.RemoveFromLocal:
+            file_syncer.copyToRemote(self.listboxcurselection())
             exit()
 
         self.showGUI()

@@ -17,11 +17,13 @@ def getRemoteFileNames(directory):
     deviceNames = os.listdir(PARTIALPATHTOREMOTE)
     if len(deviceNames) != 1:
         print "Error getting single device"
-        return
+        exit()
 
-    fullPathToRemote = os.path.join(PARTIALPATHTOREMOTE, deviceNames[0], directory)
+    # TODO: Do this with os module
+    fullPathToRemote = PARTIALPATHTOREMOTE + deviceNames[0] + directory
 
     return getLocalFileNames(fullPathToRemote)
+
 
 def getLocalFileNames(directory):
     files = []
@@ -33,17 +35,17 @@ def getLocalFileNames(directory):
     return files
 
 
-def copyToRemote():
+def copyToRemote(fileList, localDirectory, remoteDirectory):
     pass
 
 
-def copyToLocal():
+def deleteFromRemote(fileList, localDirectory, remoteDirectory):
     pass
 
 
-def deleteFromRemote():
+def copyToLocal(fileList, remoteDirectory, localDirectory):
     pass
 
 
-def deleteFromLocal():
+def deleteFromLocal(fileList, remoteDirectory, localDirectory):
     pass
