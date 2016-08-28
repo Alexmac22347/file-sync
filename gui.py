@@ -7,7 +7,7 @@ WINHEIGHT = 445
 WINWIDTH = 296
 
 # Use a global config class
-# to read from disk, and see that change in all classes/pages
+# Changes to this object are seen in every class
 config = config.globalConfig
 
 
@@ -17,6 +17,7 @@ class gui(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         # This thing is not going to be resizable
+        # TODO: Make window resizable
         self.resizable(width=False, height=False)
         self.geometry('{}x{}'.format(WINWIDTH, WINHEIGHT))
 
@@ -32,7 +33,7 @@ class gui(tk.Tk):
             print "Initializing configuration file"
             config.values['settings'] = {}
             config.values['settings']['local'] = '/home/alex/Music/'
-            config.values['settings']['remote'] = 'Card/Music/'
+            config.values['settings']['remote'] = '/Card/Music/'
 
             config.values['files'] = {}
             config.values['files']['local'] = ""
@@ -136,11 +137,7 @@ class MainPage(tk.Frame):
         self.infoBox.grid(row=5, column=0, sticky='EW')
 
         if self.currentState == self.State.AddToRemote:
-            print "old: {}".format(config.values['files']['local'].split('\n'))
-            print "\n\n\n\n\n"
-            print "new: {}".format(file_syncer.getLocalFileNames(config.values['settings']['local']))
-
-            for filename in helper.getAddedLocalFiles(
+            for filename in helper.getAddedFiles(
                     config.values['files']['local'].split('\n'),
                     file_syncer.getLocalFileNames(config.values['settings']['local'])):
                 self.listbox.insert(0, filename)
@@ -150,16 +147,37 @@ class MainPage(tk.Frame):
             return
 
         if self.currentState == self.State.RemoveFromRemote:
+            self.listbox.delete(0, last=None)
+
+            for filename in helper.getRemovedFiles(
+                    config.values['files']['local'].split('\n'),
+                    file_syncer.getLocalFileNames(config.values['settings']['local'])):
+                self.listbox.insert(0, filename)
+
             self.updateAllButton['text'] = "Remove all from remote"
             self.updateSelectedButton['text'] = "Remove selected from remote"
             return
 
         if self.currentState == self.State.AddToLocal:
+            self.listbox.delete(0, last=None)
+
+            for filename in helper.getAddedFiles(
+                    config.values['files']['remote'].split('\n'),
+                    file_syncer.getRemoteFileNames(config.values['settings']['remote'])):
+                self.listbox.insert(0, filename)
+
             self.updateAllButton['text'] = "Add all to local"
             self.updateSelectedButton['text'] = "Add selected to local"
             return
 
         if self.currentState == self.State.RemoveFromLocal:
+            self.listbox.delete(0, last=None)
+
+            for filename in helper.getRemovedFiles(
+                    config.values['files']['remote'].split('\n'),
+                    file_syncer.getRemoteFileNames(config.values['settings']['remote'])):
+                self.listbox.insert(0, filename)
+
             self.updateAllButton['text'] = "Remove all from local"
             self.updateSelectedButton['text'] = "Remove selected from local"
             return
