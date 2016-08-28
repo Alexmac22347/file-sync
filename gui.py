@@ -1,6 +1,7 @@
 import Tkinter as tk
 import config
 import file_syncer
+import helper
 
 WINHEIGHT = 445
 WINWIDTH = 296
@@ -22,16 +23,7 @@ class gui(tk.Tk):
         container = tk.Frame(self)
         container.grid()
 
-        # This dictionary contains the two Frames,
-        # MainPage and SettingsPage
-        self.frames = {}
-        for F in (MainPage, SettingsPage):
-            frame = F(container, self)
-            self.frames[F] = frame
-            frame.grid(row=0, column=0, sticky='nsew')
-
-        self.showFrame(MainPage)
-
+        # TODO: Seperate this out
         # Read the config file. If it is
         # empty, initialize it
         config.readConfig()
@@ -51,8 +43,16 @@ class gui(tk.Tk):
                 config.values['files']['remote'] += filename + "\n"
 
             config.writeConfig()
-            # TODO: This is probably pointless
-            config.readConfig()
+
+        # This dictionary contains the two Frames,
+        # MainPage and SettingsPage
+        self.frames = {}
+        for F in (MainPage, SettingsPage):
+            frame = F(container, self)
+            self.frames[F] = frame
+            frame.grid(row=0, column=0, sticky='nsew')
+
+        self.showFrame(MainPage)
 
     def showFrame(self, cont):
         frame = self.frames[cont]
@@ -89,6 +89,7 @@ class MainPage(tk.Frame):
         self.xScroll.grid(row=1, column=0, sticky=tk.E + tk.W)
         # Create the listbox
         self.listbox = tk.Listbox(self, activestyle='none',
+                                  selectmode='multiple',
                                   height=20,
                                   width=35,
                                   xscrollcommand=self.xScroll.set,
@@ -135,6 +136,15 @@ class MainPage(tk.Frame):
         self.infoBox.grid(row=5, column=0, sticky='EW')
 
         if self.currentState == self.State.AddToRemote:
+            print "old: {}".format(config.values['files']['local'].split('\n'))
+            print "\n\n\n\n\n"
+            print "new: {}".format(file_syncer.getLocalFileNames(config.values['settings']['local']))
+
+            for filename in helper.getAddedLocalFiles(
+                    config.values['files']['local'].split('\n'),
+                    file_syncer.getLocalFileNames(config.values['settings']['local'])):
+                self.listbox.insert(0, filename)
+
             self.updateAllButton['text'] = "Add all to remote"
             self.updateSelectedButton['text'] = "Add selected to remote"
             return
@@ -213,7 +223,6 @@ class SettingsPage(tk.Frame):
         self.remoteLabel = tk.Label(
             self, text="Remote:")
 
-        # Create the local and remote directory text entry boxes
         self.localDirectoryBox = tk.Entry(
             self, width=29, textvariable=self.localDirectory)
         self.remoteDirectoryBox = tk.Entry(
