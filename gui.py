@@ -137,6 +137,7 @@ class MainPage(tk.Frame):
         self.infoBox.grid(row=5, column=0, sticky='EW')
 
         if self.currentState == self.State.AddToRemote:
+            self.listbox.delete(0, last=None)
             for filename in helper.getAddedFiles(
                     config.values['files']['local'].split('\n'),
                     file_syncer.getLocalFileNames(config.values['settings']['local'])):
@@ -206,8 +207,8 @@ class MainPage(tk.Frame):
                     config.values['settings']['remote'])
             for filename in self.listbox.get(0, last=None):
                 # TODO: Test this
-                config.values['files']['local'].replace(filename, "")           
-                config.values['files']['remote'].replace(filename, "")           
+                config.values['files']['local'] = config.values['files']['local'].replace(filename + "\n", "")           
+                config.values['files']['remote'] = config.values['files']['remote'].replace(filename + "\n", "")           
 
             self.currentState = self.State.AddToLocal
 
@@ -230,8 +231,8 @@ class MainPage(tk.Frame):
                     config.values['settings']['local'])
             for filename in self.listbox.get(0, last=None):
                 # TODO: Test this
-                config.values['files']['remote'].replace(filename, "")           
-                config.values['files']['local'].replace(filename, "")           
+                config.values['files']['remote'] = config.values['files']['remote'].replace(filename + "\n", "")           
+                config.values['files']['local'] = config.values['files']['local'].replace(filename + "\n", "")           
 
             exit()
 
