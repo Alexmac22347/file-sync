@@ -14,3 +14,4 @@ TODO:
 - allow window resizing
 - prompt user for paths when new config is created
 - add loading bar so you know it's not frozen when checking remote
+- Only read remote files from using file_sync ONCE.
