@@ -95,10 +95,19 @@ class MainPage(tk.Frame):
                     remoteFiles,
                     file_syncer.getLocalFileNames(gconfig.values['settings']['remote']))
 
-        # TODO: If a file has been added to local and remote, write it to the 
-        # the config, and remove it from addedToLocal and addedToRemote
-        helper.updateAndWriteConfigAddedFiles(self.addedToLocal, self.addedToRemote, gconfig)
-        helper.updateAndWriteConfigRemovedFiles(self.removedFromLocal, self.removedFromRemote, gconfig)
+        # If a file is added to the local AND the remote directories, we update
+        # the config file, and update the data structures to reflect this.
+        # Same goes for files deleted locally AND remotely
+        commonAddedFiles = set.intersection(self.addedToLocal, self.addedToRemote)
+        commonRemovedfiles = set.intersection(self.removedFromLocal, self.removedFromRemote)
+        helper.writeDuplicateAddedFiles(commonAddedFiles, gconfig)
+        helper.writeDuplicateRemovedFiles(commonRemovedFiles, gconfig)
+
+        self.addedToLocal.difference_update(commonAddedFiles)
+        self.addedToRemote.difference_update(commonAddedFiles)
+
+        self.removedToLocal.difference_update(commonRemovedFiles)
+        self.removedToRemote.difference_update(commonRemovedFiles)
 
 
     def initializeWidgets(self, controller):
@@ -355,5 +364,6 @@ class SettingsPage(tk.Frame):
         gconfig.values['settings']['remote']=self.remoteDirectory.get()
         # All the filenames are lost here, which makes sense because
         # we changed to a new directory
+        # TODO: Dont't do this if the directory is unchanged"
         gconfig.writeConfig()
         controller.showFrame(MainPage)
