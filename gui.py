@@ -90,24 +90,24 @@ class MainPage(tk.Frame):
                     file_syncer.getLocalFileNames(gconfig.values['settings']['local']))
         self.addedToRemote = helper.getAddedFiles(
                     remoteFiles,
-                    file_syncer.getLocalFileNames(gconfig.values['settings']['remote']))
+                    file_syncer.getRemoteFileNames(gconfig.values['settings']['remote']))
         self.removedFromRemote = helper.getRemovedFiles(
                     remoteFiles,
-                    file_syncer.getLocalFileNames(gconfig.values['settings']['remote']))
+                    file_syncer.getRemoteFileNames(gconfig.values['settings']['remote']))
 
         # If a file is added to the local AND the remote directories, we update
         # the config file, and update the data structures to reflect this.
         # Same goes for files deleted locally AND remotely
         commonAddedFiles = set.intersection(self.addedToLocal, self.addedToRemote)
-        commonRemovedfiles = set.intersection(self.removedFromLocal, self.removedFromRemote)
+        commonRemovedFiles = set.intersection(self.removedFromLocal, self.removedFromRemote)
         helper.writeDuplicateAddedFiles(commonAddedFiles, gconfig)
         helper.writeDuplicateRemovedFiles(commonRemovedFiles, gconfig)
 
         self.addedToLocal.difference_update(commonAddedFiles)
         self.addedToRemote.difference_update(commonAddedFiles)
 
-        self.removedToLocal.difference_update(commonRemovedFiles)
-        self.removedToRemote.difference_update(commonRemovedFiles)
+        self.removedFromLocal.difference_update(commonRemovedFiles)
+        self.removedFromRemote.difference_update(commonRemovedFiles)
 
 
     def initializeWidgets(self, controller):
@@ -174,10 +174,7 @@ class MainPage(tk.Frame):
         self.infoBox.grid(row=5, column=0, sticky='EW')
 
         if self.currentState == self.State.AddToRemote:
-            for filename in helper.getAddedFiles(
-                    localFiles,
-                    file_syncer.getLocalFileNames(gconfig.values['settings']['local'])):
-                if (filename not in
+            for filename in self.addedToLocal:
                 self.listbox.insert(0, filename)
 
             self.updateAllButton['text']="Add all to remote"
@@ -185,9 +182,7 @@ class MainPage(tk.Frame):
             return
 
         if self.currentState == self.State.RemoveFromRemote:
-            for filename in helper.getRemovedFiles(
-                    localFiles,
-                    file_syncer.getLocalFileNames(gconfig.values['settings']['local'])):
+            for filename in self.removedFromLocal:
                 self.listbox.insert(0, filename)
 
             self.updateAllButton['text']="Remove all from remote"
@@ -195,9 +190,7 @@ class MainPage(tk.Frame):
             return
 
         if self.currentState == self.State.AddToLocal:
-            for filename in helper.getAddedFiles(
-                    remoteFiles,
-                    file_syncer.getRemoteFileNames(gconfig.values['settings']['remote'])):
+            for filename in self.addedToRemote:
                 self.listbox.insert(0, filename)
 
             self.updateAllButton['text']="Add all to local"
@@ -205,9 +198,7 @@ class MainPage(tk.Frame):
             return
 
         if self.currentState == self.State.RemoveFromLocal:
-            for filename in helper.getRemovedFiles(
-                    remoteFiles,
-                    file_syncer.getRemoteFileNames(gconfig.values['settings']['remote'])):
+            for filename in self.removedFromRemote:
                 self.listbox.insert(0, filename)
 
             self.updateAllButton['text']="Remove all from local"

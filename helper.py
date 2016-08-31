@@ -27,6 +27,10 @@ def writeConfigFilesToDisk(localFiles, remoteFiles, config):
 
 
 def writeDuplicateAddedFiles(addedFiles, config):
+    # This is needed. I'm confused.
+    config.values['files']['local'] += '\n'
+    config.values['files']['remote'] += '\n'
+
     for filename in addedFiles:
         config.values['files']['local'] += filename + '\n'
         config.values['files']['remote'] += filename + '\n'
