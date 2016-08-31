@@ -13,3 +13,4 @@ TODO:
 - If file added to remote and local, just add it to config.ini.
 - allow window resizing
 - prompt user for paths when new config is created
+- add loading bar so you know it's not frozen when checking remote

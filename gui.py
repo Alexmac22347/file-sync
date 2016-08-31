@@ -43,8 +43,10 @@ class gui(tk.Tk):
             gconfig.values['settings']['local'] = '/home/alex/Music/'
             gconfig.values['settings']['remote'] = '/Card/Music/'
 
-            localFiles = file_syncer.getLocalFileNames(gconfig.values['settings']['local'])
-            remoteFiles = file_syncer.getRemoteFileNames(gconfig.values['settings']['remote'])
+            localFiles = file_syncer.getLocalFileNames(
+                gconfig.values['settings']['local'])
+            remoteFiles = file_syncer.getRemoteFileNames(
+                gconfig.values['settings']['remote'])
 
             helper.writeConfigFilesToDisk(localFiles, remoteFiles, gconfig)
 
@@ -126,7 +128,7 @@ class MainPage(tk.Frame):
 
         # Create the info box
         self.infoBox = tk.Label(
-            self, height=2, anchor='s', fg='black', bg='white', relief='ridge')
+            self, height=2, anchor='w', fg='black', bg='white', relief='ridge', justify=tk.LEFT)
 
     # This will draw the GUI based on the current state
     def showGUI(self):
@@ -135,7 +137,7 @@ class MainPage(tk.Frame):
         # no matter what state we're in
         self.listbox.grid(row=0, column=0, sticky='NSEW')
         # Clear the listbox
-        self.listbox.delete(0, last=None)
+        self.listbox.delete(0, self.listbox.size())
         self.settingsButton.grid(row=2, column=0, sticky='EN')
         self.updateAllButton.grid(row=2, column=0, sticky='W')
         self.updateSelectedButton.grid(
@@ -149,9 +151,10 @@ class MainPage(tk.Frame):
                     file_syncer.getLocalFileNames(gconfig.values['settings']['local'])):
                 self.listbox.insert(0, filename)
 
-            # self.listbox.inset(0, helper.getAddedFiles(
-            #   localFiles,
-            #   *file_syncer.getLocalFileNames(gconfig.values['settings']['local'])))
+            #if self.listbox.get(0, self.listbox.size()):
+            #    self.infoBox['text'] = "These untracked files have been found in \n" + gconfig.values['settings']['local']
+            #else:
+            #    self.infoBox['text'] = "No new files were found in \n" + gconfig.values['settings']['local']
 
             self.updateAllButton['text'] = "Add all to remote"
             self.updateSelectedButton['text'] = "Add selected to remote"
@@ -195,42 +198,42 @@ class MainPage(tk.Frame):
         global localFiles, remoteFiles
 
         if self.currentState == self.State.AddToRemote:
-            file_syncer.copyToRemote(self.listbox.get(0, last=None),
-                    gconfig.values['settings']['local'],
-                    gconfig.values['settings']['remote'])
-            # TODO: Not sure if syntax is correct
-            localFiles = localFiles | set(self.listbox.get(0, last=None))
-            remoteFiles = remoteFiles | set(self.listbox.get(0, last=None))
+            file_syncer.copyToRemote(self.listbox.get(0, self.listbox.size()),
+                                     gconfig.values['settings']['local'],
+                                     gconfig.values['settings']['remote'])
+
+            localFiles.update(set(self.listbox.get(0, self.listbox.size())))
+            remoteFiles.update(set(self.listbox.get(0, self.listbox.size())))
 
             self.currentState = self.State.RemoveFromRemote
 
         elif self.currentState == self.State.RemoveFromRemote:
-            file_syncer.deleteFromRemote(self.listbox.get(0, last=None),
-                    gconfig.values['settings']['local'],
-                    gconfig.values['settings']['remote'])
+            file_syncer.deleteFromRemote(self.listbox.get(0, self.listbox.size()),
+                                         gconfig.values['settings']['local'],
+                                         gconfig.values['settings']['remote'])
 
-            localFiles = localFiles - self.listbox.get(0 ,last=None)
-            remoteFiles = remoteFiles - self.listbox.get(0 ,last=None)
+            localFiles.difference_update(set(self.listbox.get(0, self.listbox.size())))
+            remoteFiles.difference_update(set(self.listbox.get(0, self.listbox.size())))
 
             self.currentState = self.State.AddToLocal
 
         elif self.currentState == self.State.AddToLocal:
-            file_syncer.copyToLocal(self.listbox.get(0, last=None),
-                    gconfig.values['settings']['remote'],
-                    gconfig.values['settings']['local'])
+            file_syncer.copyToLocal(self.listbox.get(0, self.listbox.size()),
+                                    gconfig.values['settings']['remote'],
+                                    gconfig.values['settings']['local'])
 
-            localFiles = localFiles | self.listbox(0, last=None)
-            remoteFiles = remoteFiles | self.listbox(0, last=None)
+            localFiles.update(set(self.listbox.get(0, self.listbox.size())))
+            remoteFiles.update(set(self.listbox.get(0, self.listbox.size())))
 
             self.currentState = self.State.RemoveFromLocal
 
         elif self.currentState == self.State.RemoveFromLocal:
-            file_syncer.deleteFromLocal(self.listbox.get(0, last=None),
-                    gconfig.values['settings']['remote'],
-                    gconfig.values['settings']['local'])
+            file_syncer.deleteFromLocal(self.listbox.get(0, self.listbox.size()),
+                                        gconfig.values['settings']['remote'],
+                                        gconfig.values['settings']['local'])
 
-            localFiles = localFiles - self.listbox.get(0, last=None)
-            remoteFiles = remoteFiles - self.listbox.get(0, last=None)
+            localFiles.difference_update(set(self.listbox.get(0, self.listbox.size())))
+            remoteFiles.difference_update(set(self.listbox.get(0, self.listbox.size())))
 
             # Remember to write config to disk before exiting
             helper.writeConfigFilesToDisk(localFiles, remoteFiles, gconfig)
