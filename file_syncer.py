@@ -2,20 +2,18 @@ import os
 
 PARTIALPATHTOREMOTE = '/run/user/1000/gvfs/'
 
-# TODO: Determine what to do if there is more than one device
 
-
-def isDeviceAvailable():
-    if len(os.listdir(PARTIALPATHTOREMOTE)) == 0:
-        return False
-    return True
+def isSingleDeviceAvailable():
+    if len(os.listdir(PARTIALPATHTOREMOTE)) == 1:
+        return True
+    return False
 
 
 def getRemoteFileNames(directory):
     # Extra stuff to get the path to the phone.
     # It's a different path every time the phone is plugged in
     deviceNames = os.listdir(PARTIALPATHTOREMOTE)
-    if len(deviceNames) != 1:
+    if not isSingleDeviceAvailable():
         print "Error getting single device"
         exit()
 
@@ -26,11 +24,10 @@ def getRemoteFileNames(directory):
 
 
 def getLocalFileNames(directory):
-    files = []
+    files = set()
     for dirpath, dirnames, filenames in os.walk(directory):
         for filename in filenames:
-            if dirpath + filename not in files:
-                files.append(dirpath[len(directory):] + "/" + filename)
+            files.add(dirpath[len(directory):] + "/" + filename)
 
     return files
 

@@ -16,11 +16,16 @@ class config:
             self.configParser.read(open(CONFIGFILENAME))
 
     def readConfig(self):
-        # From: http://stackoverflow.com/questions/3220670/read-all-the-contents-in-ini-file-into-dictionary-with-python
+        # If the config is empty we raise an exception.
+        # Another class will handle the initialization
+        if not self.configParser.sections():
+            raise NoConfigException
+
         for section in self.configParser.sections():
             self.values[section] = {}
             for option in self.configParser.options(section):
                 self.values[section][option] = self.configParser.get(section, option)
+
 
     def writeConfig(self):
         for section in self.values.keys():
@@ -33,5 +38,9 @@ class config:
 
         with open(CONFIGFILENAME, 'w') as f:
             self.configParser.write(f)
+
+
+class NoConfigException(Exception):
+    pass
 
 globalConfig = config()
