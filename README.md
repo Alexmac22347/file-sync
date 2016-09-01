@@ -7,7 +7,5 @@ Eg, if you put a huge compilation on your phone,
     or PC, this will copy them over
 
 TODO:
-- The following untracked files have been found in:
-- The following files have been removed from:
 - allow window resizing
 - prompt user for paths when new config is created

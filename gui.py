@@ -16,8 +16,8 @@ gconfig.values['settings'] = {}
 # of "tracked" files
 localFiles = set()
 remoteFiles = set()
-latestLocalFiles = set() 
-latestRemoteFiles = set() 
+latestLocalFiles = set()
+latestRemoteFiles = set()
 
 
 class gui(tk.Tk):
@@ -32,7 +32,7 @@ class gui(tk.Tk):
         container = tk.Frame(self)
         container.grid()
 
-        # Read the config file. If it is empty, initialize it 
+        # Read the config file. If it is empty, initialize it
         global localFiles, remoteFiles, latestLocalFiles, latestRemoteFiles
         try:
             gconfig.readConfig()
@@ -92,23 +92,25 @@ class MainPage(tk.Frame):
         self.initializeWidgets(controller)
 
         self.addedToLocal = helper.getAddedFiles(
-                    localFiles,
-                    latestLocalFiles)
+            localFiles,
+            latestLocalFiles)
         self.removedFromLocal = helper.getRemovedFiles(
-                    localFiles,
-                    latestLocalFiles)
+            localFiles,
+            latestLocalFiles)
         self.addedToRemote = helper.getAddedFiles(
-                    remoteFiles,
-                    latestRemoteFiles)
+            remoteFiles,
+            latestRemoteFiles)
         self.removedFromRemote = helper.getRemovedFiles(
-                    remoteFiles,
-                    latestRemoteFiles)
+            remoteFiles,
+            latestRemoteFiles)
 
         # If a file is added to the local AND the remote directories, we update
         # the config file, and update the data structures to reflect this.
         # Same goes for files deleted locally AND remotely
-        commonAddedFiles = set.intersection(self.addedToLocal, self.addedToRemote)
-        commonRemovedFiles = set.intersection(self.removedFromLocal, self.removedFromRemote)
+        commonAddedFiles = set.intersection(
+            self.addedToLocal, self.addedToRemote)
+        commonRemovedFiles = set.intersection(
+            self.removedFromLocal, self.removedFromRemote)
         helper.writeDuplicateAddedFiles(commonAddedFiles, gconfig)
         helper.writeDuplicateRemovedFiles(commonRemovedFiles, gconfig)
 
@@ -117,7 +119,6 @@ class MainPage(tk.Frame):
 
         self.removedFromLocal.difference_update(commonRemovedFiles)
         self.removedFromRemote.difference_update(commonRemovedFiles)
-
 
     def initializeWidgets(self, controller):
         # Create the grid layout manager
@@ -165,7 +166,7 @@ class MainPage(tk.Frame):
 
         # Create the info box
         self.infoBox = tk.Label(
-            self, height=2, anchor='w', fg='black', bg='white', relief='ridge', justify=tk.LEFT)
+            self, height=2, anchor='nw', fg='black', bg='white', relief='ridge', justify=tk.LEFT)
 
     # This will draw the GUI based on the current state
     def showGUI(self):
@@ -186,32 +187,56 @@ class MainPage(tk.Frame):
             for filename in self.addedToLocal:
                 self.listbox.insert(0, filename)
 
-            self.updateAllButton['text']="Add all to remote"
-            self.updateSelectedButton['text']="Add selected to remote"
+            if self.addedToLocal:
+                self.infoBox['text'] = "These files have been added to " + \
+                    gconfig.values['settings']['local']
+            else:
+                self.infoBox['text'] = "No new files in " + gconfig.values['settings']['local']
+
+            self.updateAllButton['text'] = "Add all to remote"
+            self.updateSelectedButton['text'] = "Add selected to remote"
             return
 
         if self.currentState == self.State.RemoveFromRemote:
             for filename in self.removedFromLocal:
                 self.listbox.insert(0, filename)
 
-            self.updateAllButton['text']="Remove all from remote"
-            self.updateSelectedButton['text']="Remove selected from remote"
+            if self.removedFromLocal:
+                self.infoBox['text'] = "These files have been deleted from " + \
+                    gconfig.values['settings']['local']
+            else:
+                self.infoBox['text'] = "No deleted files in " + gconfig.values['settings']['local']
+
+            self.updateAllButton['text'] = "Remove all from remote"
+            self.updateSelectedButton['text'] = "Remove selected from remote"
             return
 
         if self.currentState == self.State.AddToLocal:
             for filename in self.addedToRemote:
                 self.listbox.insert(0, filename)
 
-            self.updateAllButton['text']="Add all to local"
-            self.updateSelectedButton['text']="Add selected to local"
+            if self.addedToRemote:
+                self.infoBox['text'] = "These files have been added to (Device)" + \
+                    gconfig.values['settings']['remote']
+            else:
+                self.infoBox['text'] = "No new files in (Device)" + gconfig.values['settings']['remote']
+
+            self.updateAllButton['text'] = "Add all to local"
+            self.updateSelectedButton['text'] = "Add selected to local"
             return
 
         if self.currentState == self.State.RemoveFromLocal:
             for filename in self.removedFromRemote:
                 self.listbox.insert(0, filename)
 
-            self.updateAllButton['text']="Remove all from local"
-            self.updateSelectedButton['text']="Remove selected from local"
+            if self.removedFromRemote:
+                self.infoBox['text'] = "These files have been deleted from (Device)" + \
+                    gconfig.values['settings']['remote']
+            else:
+                self.infoBox['text'] = "No deleted files in (Device)" + gconfig.values['settings']['remote']
+
+            self.updateAllButton['text'] = "Remove all from local"
+            self.updateSelectedButton['text'] = "Remove selected from local"
             return
 
     # Various event handlers
@@ -229,7 +254,7 @@ class MainPage(tk.Frame):
             localFiles.update(set(self.listbox.get(0, self.listbox.size())))
             remoteFiles.update(set(self.listbox.get(0, self.listbox.size())))
 
-            self.currentState=self.State.RemoveFromRemote
+            self.currentState = self.State.RemoveFromRemote
 
         elif self.currentState == self.State.RemoveFromRemote:
             file_syncer.deleteFromRemote(self.listbox.get(0, self.listbox.size()),
@@ -241,7 +266,7 @@ class MainPage(tk.Frame):
             remoteFiles.difference_update(
                 set(self.listbox.get(0, self.listbox.size())))
 
-            self.currentState=self.State.AddToLocal
+            self.currentState = self.State.AddToLocal
 
         elif self.currentState == self.State.AddToLocal:
             file_syncer.copyToLocal(self.listbox.get(0, self.listbox.size()),
@@ -251,7 +276,7 @@ class MainPage(tk.Frame):
             localFiles.update(set(self.listbox.get(0, self.listbox.size())))
             remoteFiles.update(set(self.listbox.get(0, self.listbox.size())))
 
-            self.currentState=self.State.RemoveFromLocal
+            self.currentState = self.State.RemoveFromLocal
 
         elif self.currentState == self.State.RemoveFromLocal:
             file_syncer.deleteFromLocal(self.listbox.get(0, self.listbox.size()),
@@ -274,15 +299,15 @@ class MainPage(tk.Frame):
     def onUpdateSelectedButtonClick(self):
         if self.currentState == self.State.AddToRemote:
             file_syncer.copyToRemote(self.listboxcurselection())
-            self.currentState=self.State.RemoveFromRemote
+            self.currentState = self.State.RemoveFromRemote
 
         elif self.currentState == self.State.RemoveFromRemote:
             file_syncer.copyToRemote(self.listboxcurselection())
-            self.currentState=self.State.AddToLocal
+            self.currentState = self.State.AddToLocal
 
         elif self.currentState == self.State.AddToLocal:
             file_syncer.copyToRemote(self.listboxcurselection())
-            self.currentState=self.State.RemoveFromLocal
+            self.currentState = self.State.RemoveFromLocal
 
         elif self.currentState == self.State.RemoveFromLocal:
             file_syncer.copyToRemote(self.listboxcurselection())
@@ -292,11 +317,11 @@ class MainPage(tk.Frame):
 
     def onSkipButtonClick(self):
         if self.currentState == self.State.AddToRemote:
-            self.currentState=self.State.RemoveFromRemote
+            self.currentState = self.State.RemoveFromRemote
         elif self.currentState == self.State.RemoveFromRemote:
-            self.currentState=self.State.AddToLocal
+            self.currentState = self.State.AddToLocal
         elif self.currentState == self.State.AddToLocal:
-            self.currentState=self.State.RemoveFromLocal
+            self.currentState = self.State.RemoveFromLocal
         elif self.currentState == self.State.RemoveFromLocal:
             exit()
 
@@ -306,8 +331,8 @@ class MainPage(tk.Frame):
 class SettingsPage(tk.Frame):
 
     def __init__(self, parent, controller):
-        self.localDirectory=tk.StringVar()
-        self.remoteDirectory=tk.StringVar()
+        self.localDirectory = tk.StringVar()
+        self.remoteDirectory = tk.StringVar()
         tk.Frame.__init__(self, parent)
         self.initializeWidgets(controller)
 
@@ -316,30 +341,30 @@ class SettingsPage(tk.Frame):
         self.grid()
 
         # Create the Local and Remote labels
-        self.localLabel=tk.Label(
+        self.localLabel = tk.Label(
             self, text="Local:")
-        self.remoteLabel=tk.Label(
+        self.remoteLabel = tk.Label(
             self, text="Remote:")
 
-        self.localDirectoryBox=tk.Entry(
+        self.localDirectoryBox = tk.Entry(
             self, width=29, textvariable=self.localDirectory)
-        self.remoteDirectoryBox=tk.Entry(
+        self.remoteDirectoryBox = tk.Entry(
             self, width=29, textvariable=self.remoteDirectory)
 
         # Create the cancel and save buttons
-        self.cancelButton=tk.Button(
+        self.cancelButton = tk.Button(
             self,
             text="Cancel",
             width=15,
             command=lambda: self.onCancelButtonClick(controller))
-        self.saveButton=tk.Button(
+        self.saveButton = tk.Button(
             self,
             text="Save",
             width=15,
             command=lambda: self.onSaveButtonClick(controller))
 
         # Create the infobox
-        self.infoBox=tk.Label(
+        self.infoBox = tk.Label(
             self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
@@ -360,8 +385,8 @@ class SettingsPage(tk.Frame):
     def onSaveButtonClick(self, controller):
         self.localDirectory.get()
         self.remoteDirectory.get()
-        gconfig.values['settings']['local']=self.localDirectory.get()
-        gconfig.values['settings']['remote']=self.remoteDirectory.get()
+        gconfig.values['settings']['local'] = self.localDirectory.get()
+        gconfig.values['settings']['remote'] = self.remoteDirectory.get()
         # All the filenames are lost here, which makes sense because
         # we changed to a new directory
         # TODO: Dont't do this if the directory is unchanged"
