@@ -26,24 +26,22 @@ def writeConfigFilesToDisk(localFiles, remoteFiles, config):
     config.writeConfig()
 
 
-def writeDuplicateAddedFiles(addedFiles, config):
+def appendFilesToConfig(localFiles, remoteFiles, config):
     # This is needed. I'm confused.
     config.values['files']['local'] += '\n'
     config.values['files']['remote'] += '\n'
 
-    for filename in addedFiles:
+    for filename in localFiles:
         config.values['files']['local'] += filename + '\n'
+    for filename in remoteFiles:
         config.values['files']['remote'] += filename + '\n'
 
-    config.writeConfig()
 
-
-def writeDuplicateRemovedFiles(removedFiles, config):
-    for filename in removedFiles:
+def removeFilesFromConfig(localFiles, remoteFiles, config):
+    for filename in localFiles:
         config.values['files']['local'] = config.values['files']['local'].replace(filename + '\n', "")
+    for filename in remoteFiles:
         config.values['files']['remote'] = config.values['files']['remote'].replace(filename + '\n', "")
-
-    config.writeConfig()
 
 
 def addFilesFromListBox(localFiles, remoteFiles, listbox, selectAll):

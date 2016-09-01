@@ -9,7 +9,3 @@ Eg, if you put a huge compilation on your phone,
 TODO:
 - allow window resizing
 - prompt user for paths when new config is created
-- if locally added files are already there in remote, just 
-  add them to the config. same goes for remotely added files
-  which already exist locally.
-  similar thing for deleted files

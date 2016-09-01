@@ -14,8 +14,8 @@ gconfig.values['settings'] = {}
 
 # sets which contain filenames
 # of "tracked" files
-localFiles = set()
-remoteFiles = set()
+cachedLocalFiles = set()
+cachedRemoteFiles = set()
 latestLocalFiles = set()
 latestRemoteFiles = set()
 
@@ -33,11 +33,11 @@ class gui(tk.Tk):
         container.grid()
 
         # Read the config file. If it is empty, initialize it
-        global localFiles, remoteFiles, latestLocalFiles, latestRemoteFiles
+        global cachedLocalFiles, cachedRemoteFiles, latestLocalFiles, latestRemoteFiles
         try:
             gconfig.readConfig()
-            localFiles = set(gconfig.values['files']['local'].split('\n'))
-            remoteFiles = set(gconfig.values['files']['remote'].split('\n'))
+            cachedLocalFiles = set(gconfig.values['files']['local'].split('\n'))
+            cachedRemoteFiles = set(gconfig.values['files']['remote'].split('\n'))
 
             latestLocalFiles = file_syncer.getLocalFileNames(
                 gconfig.values['settings']['local'])
@@ -49,15 +49,15 @@ class gui(tk.Tk):
             gconfig.values['settings']['local'] = '/home/alex/Music/'
             gconfig.values['settings']['remote'] = '/Card/Music/'
 
-            localFiles = file_syncer.getLocalFileNames(
+            cachedLocalFiles = file_syncer.getLocalFileNames(
                 gconfig.values['settings']['local'])
-            remoteFiles = file_syncer.getRemoteFileNames(
+            cachedRemoteFiles = file_syncer.getRemoteFileNames(
                 gconfig.values['settings']['remote'])
 
-            latestLocalFiles = localFiles.copy()
-            latestRemoteFiles = remoteFiles.copy()
+            latestLocalFiles = cachedLocalFiles.copy()
+            latestRemoteFiles = cachedRemoteFiles.copy()
 
-            helper.writeConfigFilesToDisk(localFiles, remoteFiles, gconfig)
+            helper.writeConfigFilesToDisk(cachedLocalFiles, cachedRemoteFiles, gconfig)
 
         # This dictionary contains the two Frames,
         # MainPage and SettingsPage
@@ -92,16 +92,16 @@ class MainPage(tk.Frame):
         self.initializeWidgets(controller)
 
         self.addedToLocal = helper.getAddedFiles(
-            localFiles,
+            cachedLocalFiles,
             latestLocalFiles)
         self.removedFromLocal = helper.getRemovedFiles(
-            localFiles,
+            cachedLocalFiles,
             latestLocalFiles)
         self.addedToRemote = helper.getAddedFiles(
-            remoteFiles,
+            cachedRemoteFiles,
             latestRemoteFiles)
         self.removedFromRemote = helper.getRemovedFiles(
-            remoteFiles,
+            cachedRemoteFiles,
             latestRemoteFiles)
 
         # If a file is added to the local AND the remote directories, we update
@@ -111,14 +111,38 @@ class MainPage(tk.Frame):
             self.addedToLocal, self.addedToRemote)
         commonRemovedFiles = set.intersection(
             self.removedFromLocal, self.removedFromRemote)
-        helper.writeDuplicateAddedFiles(commonAddedFiles, gconfig)
-        helper.writeDuplicateRemovedFiles(commonRemovedFiles, gconfig)
+
+        helper.appendFilesToConfig(commonAddedFiles, commonAddedFiles, gconfig)
+        helper.removeFilesFromConfig(commonRemovedFiles, commonRemovedFiles, gconfig)
 
         self.addedToLocal.difference_update(commonAddedFiles)
         self.addedToRemote.difference_update(commonAddedFiles)
 
         self.removedFromLocal.difference_update(commonRemovedFiles)
         self.removedFromRemote.difference_update(commonRemovedFiles)
+
+        # If a file is added to the local directory, but it already exists in
+        # the remote directory, and already appears under the "remote" section 
+        # of config.ini, we can simply add it to the "local" section of config.ini
+        # without asking the user. In a way, it's already been "copied" to remote.
+        # Same goes for other cases
+        addedLocallyButExistsInRemote = set.intersection(self.addedToLocal, latestRemoteFiles)
+        removedLocallyButDoesntExistInRemote = self.removedFromLocal - latestRemoteFiles
+        addedRemotelyButExistsInLocal = set.intersection(self.addedToRemote, latestLocalFiles)
+        removedRemotelyButDoesntExistInLocal = self.removedFromRemote - latestLocalFiles
+
+        # Update the config
+        helper.appendFilesToConfig(addedLocallyButExistsInRemote, addedRemotelyButExistsInLocal, gconfig)
+        helper.removeFilesFromConfig(removedLocallyButDoesntExistInRemote, removedRemotelyButDoesntExistInLocal, gconfig)
+
+        # Update our data
+        self.addedToLocal.symmetric_difference_update(addedLocallyButExistsInRemote)
+        self.removedFromLocal.symmetric_difference_update(removedLocallyButDoesntExistInRemote)
+        self.addedToRemote.symmetric_difference_update(addedRemotelyButExistsInLocal)
+        self.removedFromRemote.symmetric_difference_update(removedRemotelyButDoesntExistInLocal)
+
+        gconfig.writeConfig()
+
 
     def initializeWidgets(self, controller):
         # Create the grid layout manager
@@ -170,7 +194,7 @@ class MainPage(tk.Frame):
 
     # This will draw the GUI based on the current state
     def showGUI(self):
-        global localFiles, remoteFiles
+        global cachedLocalFiles, cachedRemoteFiles
         # These things here will always be visible
         # no matter what state we're in
         self.listbox.grid(row=0, column=0, sticky='NSEW')
@@ -249,14 +273,14 @@ class MainPage(tk.Frame):
         controller.showFrame(SettingsPage)
 
     def onUpdateButtonClick(self, selectAll):
-        global localFiles, remoteFiles, latestLocalFiles, latestRemoteFiles
+        global cachedLocalFiles, cachedRemoteFiles, latestLocalFiles, latestRemoteFiles
 
         if self.currentState == self.State.AddToRemote:
             file_syncer.copyToRemote(self.listbox.get(0, self.listbox.size()),
                                      gconfig.values['settings']['local'],
                                      gconfig.values['settings']['remote'])
 
-            helper.addFilesFromListBox(localFiles, remoteFiles, self.listbox, selectAll)
+            helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             self.currentState = self.State.RemoveFromRemote
 
@@ -265,7 +289,7 @@ class MainPage(tk.Frame):
                                          gconfig.values['settings']['local'],
                                          gconfig.values['settings']['remote'])
 
-            helper.removeFilesFromListBox(localFiles, remoteFiles, self.listbox, selectAll)
+            helper.removeFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             self.currentState = self.State.AddToLocal
 
@@ -274,7 +298,7 @@ class MainPage(tk.Frame):
                                     gconfig.values['settings']['remote'],
                                     gconfig.values['settings']['local'])
 
-            helper.addFilesFromListBox(localFiles, remoteFiles, self.listbox, selectAll)
+            helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             self.currentState = self.State.RemoveFromLocal
 
@@ -283,13 +307,13 @@ class MainPage(tk.Frame):
                                         gconfig.values['settings']['remote'],
                                         gconfig.values['settings']['local'])
 
-            helper.addFilesFromListBox(localFiles, remoteFiles, self.listbox, selectAll)
+            helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             # Remember to write config to disk before exiting
-            helper.writeConfigFilesToDisk(localFiles, remoteFiles, gconfig)
+            helper.writeConfigFilesToDisk(cachedLocalFiles, cachedRemoteFiles, gconfig)
             exit()
 
-        helper.writeConfigFilesToDisk(localFiles, remoteFiles, gconfig)
+        helper.writeConfigFilesToDisk(cachedLocalFiles, cachedRemoteFiles, gconfig)
         self.showGUI()
 
 
