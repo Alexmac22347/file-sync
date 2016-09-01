@@ -16,6 +16,8 @@ gconfig.values['settings'] = {}
 # of "tracked" files
 localFiles = set()
 remoteFiles = set()
+latestLocalFiles = set() 
+latestRemoteFiles = set() 
 
 
 class gui(tk.Tk):
@@ -30,13 +32,17 @@ class gui(tk.Tk):
         container = tk.Frame(self)
         container.grid()
 
-        # Read the config file. If it is
-        # empty, initialize it
-        global localFiles, remoteFiles
+        # Read the config file. If it is empty, initialize it 
+        global localFiles, remoteFiles, latestLocalFiles, latestRemoteFiles
         try:
             gconfig.readConfig()
             localFiles = set(gconfig.values['files']['local'].split('\n'))
             remoteFiles = set(gconfig.values['files']['remote'].split('\n'))
+
+            latestLocalFiles = file_syncer.getLocalFileNames(
+                gconfig.values['settings']['local'])
+            latestRemoteFiles = file_syncer.getRemoteFileNames(
+                gconfig.values['settings']['remote'])
 
         except config.NoConfigException:
             print "Initializing configuration file"
@@ -47,6 +53,9 @@ class gui(tk.Tk):
                 gconfig.values['settings']['local'])
             remoteFiles = file_syncer.getRemoteFileNames(
                 gconfig.values['settings']['remote'])
+
+            latestLocalFiles = localFiles.copy()
+            latestRemoteFiles = remoteFiles.copy()
 
             helper.writeConfigFilesToDisk(localFiles, remoteFiles, gconfig)
 
@@ -84,16 +93,16 @@ class MainPage(tk.Frame):
 
         self.addedToLocal = helper.getAddedFiles(
                     localFiles,
-                    file_syncer.getLocalFileNames(gconfig.values['settings']['local']))
+                    latestLocalFiles)
         self.removedFromLocal = helper.getRemovedFiles(
                     localFiles,
-                    file_syncer.getLocalFileNames(gconfig.values['settings']['local']))
+                    latestLocalFiles)
         self.addedToRemote = helper.getAddedFiles(
                     remoteFiles,
-                    file_syncer.getRemoteFileNames(gconfig.values['settings']['remote']))
+                    latestRemoteFiles)
         self.removedFromRemote = helper.getRemovedFiles(
                     remoteFiles,
-                    file_syncer.getRemoteFileNames(gconfig.values['settings']['remote']))
+                    latestRemoteFiles)
 
         # If a file is added to the local AND the remote directories, we update
         # the config file, and update the data structures to reflect this.
@@ -210,7 +219,7 @@ class MainPage(tk.Frame):
         controller.showFrame(SettingsPage)
 
     def onUpdateAllButtonClick(self):
-        global localFiles, remoteFiles
+        global localFiles, remoteFiles, latestLocalFiles, latestRemoteFiles
 
         if self.currentState == self.State.AddToRemote:
             file_syncer.copyToRemote(self.listbox.get(0, self.listbox.size()),

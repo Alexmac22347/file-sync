@@ -9,9 +9,5 @@ Eg, if you put a huge compilation on your phone,
 TODO:
 - The following untracked files have been found in:
 - The following files have been removed from:
-- If file removed from remote and local, just delete it from config.ini.
-- If file added to remote and local, just add it to config.ini.
 - allow window resizing
 - prompt user for paths when new config is created
-- add loading bar so you know it's not frozen when checking remote
-- Only read remote files from using file_sync ONCE.
