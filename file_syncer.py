@@ -1,24 +1,14 @@
 import os
+from subprocess import call
 
 PARTIALPATHTOREMOTE = '/run/user/1000/gvfs/'
-
-
-def isSingleDeviceAvailable():
-    if len(os.listdir(PARTIALPATHTOREMOTE)) == 1:
-        return True
-    return False
 
 
 def getRemoteFileNames(directory):
     # Extra stuff to get the path to the phone.
     # It's a different path every time the phone is plugged in
-    deviceNames = os.listdir(PARTIALPATHTOREMOTE)
-    if not isSingleDeviceAvailable():
-        print "Error getting single device"
-        exit()
 
-    # TODO: Do this with os module
-    fullPathToRemote = PARTIALPATHTOREMOTE + deviceNames[0] + directory
+    fullPathToRemote = _getFullPathToRemote(directory)
 
     return getLocalFileNames(fullPathToRemote)
 
@@ -33,16 +23,40 @@ def getLocalFileNames(directory):
 
 
 def copyToRemote(fileList, localDirectory, remoteDirectory):
-    pass
+    for filename in fileList:
+        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
+        fullLocalPath = localDirectory + filename
+        print "gvfs-copy {} {}".format(fullLocalPath, fullRemotePath)
 
 
-def deleteFromRemote(fileList, localDirectory, remoteDirectory):
-    pass
+def deleteFromRemote(fileList, remoteDirectory):
+    for filename in fileList:
+        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
+        print "gvfs-rm {}".format(fullRemotePath)
 
 
 def copyToLocal(fileList, remoteDirectory, localDirectory):
-    pass
+    for filename in fileList:
+        fullLocalPath = localDirectory + filename
+        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename) 
+        print "gvfs-copy {} {}".format(fullRemotePath, fullLocalPath)
 
 
-def deleteFromLocal(fileList, remoteDirectory, localDirectory):
-    pass
+def deleteFromLocal(fileList, localDirectory):
+    for filename in fileList:
+        fullLocalPath = localDirectory + filename
+        print "gvfs-rm {}".format(fullLocalPath)
+
+def _getFullPathToRemote(finalPath):
+    deviceNames = os.listdir(PARTIALPATHTOREMOTE)
+    if not _isSingleDeviceAvailable():
+        print "Error getting single device"
+        exit()
+
+    return PARTIALPATHTOREMOTE + deviceNames[0] + finalPath
+
+
+def _isSingleDeviceAvailable():
+    if len(os.listdir(PARTIALPATHTOREMOTE)) == 1:
+        return True
+    return False

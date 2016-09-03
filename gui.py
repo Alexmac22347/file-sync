@@ -286,7 +286,6 @@ class MainPage(tk.Frame):
 
         elif self.currentState == self.State.RemoveFromRemote:
             file_syncer.deleteFromRemote(self.listbox.get(0, self.listbox.size()),
-                                         gconfig.values['settings']['local'],
                                          gconfig.values['settings']['remote'])
 
             helper.removeFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
@@ -304,7 +303,6 @@ class MainPage(tk.Frame):
 
         elif self.currentState == self.State.RemoveFromLocal:
             file_syncer.deleteFromLocal(self.listbox.get(0, self.listbox.size()),
-                                        gconfig.values['settings']['remote'],
                                         gconfig.values['settings']['local'])
 
             helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
