@@ -1,10 +1,10 @@
 Use this to sync files between a phone and PC.
+You don't have to remember which files you removed/added 
+to your phone/pc
 Eg, if you put a huge compilation on your phone,
     then go through and delete songs you dont like
     from your phone, you can delete the same songs
     from your pc as well.
-    Or if you add a bunch of songs to your phone
-    or PC, this will copy them over
 
 TODO:
 - allow window resizing

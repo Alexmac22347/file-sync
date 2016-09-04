@@ -336,7 +336,7 @@ class MainPage(tk.Frame):
                 file_syncer.deleteFromLocal(selectedFiles,
                                             gconfig.values['settings']['local'])
 
-            helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
+            helper.removeFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             # Remember to write config to disk before exiting
             helper.writeConfigFilesToDisk(cachedLocalFiles, cachedRemoteFiles, gconfig)
