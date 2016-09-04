@@ -26,50 +26,63 @@ def getLocalFileNames(directory):
 def copyToRemote(fileList, localDirectory, remoteDirectory):
     for filename in fileList:
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullRemotePath = helper.escapeString(fullRemotePath)
+        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
         fullLocalPath = localDirectory + filename
-        fullLocalPath = helper.escapeString(fullLocalPath)
-        #call("gvfs-copy " + fullLocalPath + " " + fullRemotePath, shell=True)
+        fullEscapedRemotePathLocalPath = helper.escapeString(fullLocalPath)
 
-        remotePath, remoteFilename = os.path.split(fullRemotePath)
+        remotePath = os.path.split(fullRemotePath)[0]
 
         if not os.path.exists(remotePath):
             os.mkdir(remotePath)
 
-        print "gvfs-copy {} {}".format(fullLocalPath, fullRemotePath)
-        call("gvfs-copy " + fullLocalPath + " " + fullRemotePath, shell=True)
+        print "gvfs-copy {} {}".format(fullEscapedRemotePathLocalPath, fullEscapedRemotePath)
+        call("gvfs-copy " + fullEscapedRemotePathLocalPath + " " + fullEscapedRemotePath, shell=True)
 
 
 def deleteFromRemote(fileList, remoteDirectory):
     for filename in fileList:
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullRemotePath = helper.escapeString(fullRemotePath)
-        print "gvfs-rm {}".format(fullRemotePath)
-        call("gvfs-rm " + fullRemotePath, shell=True)
+        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
+
+        print "gvfs-rm {}".format(fullEscapedRemotePath)
+        call("gvfs-rm " + fullEscapedRemotePath, shell=True)
+
+        remotePath = os.path.split(fullRemotePath)[0]
+        print "Hey " + remotePath
+
+        if(len(os.listdir(remotePath)) == 0):
+            os.rmdir(remotePath)
 
 
 def copyToLocal(fileList, remoteDirectory, localDirectory):
     for filename in fileList:
         fullLocalPath = localDirectory + filename
-        fullLocalPath = helper.escapeString(fullLocalPath)
+        fullEscapedLocalPath = helper.escapeString(fullLocalPath)
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullRemotePath = helper.escapeString(fullRemotePath)
+        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
 
-        localPath, localFilename = os.path.split(fullLocalPath)
+        localPath = os.path.split(fullLocalPath)[0]
 
         if not os.path.exists(localPath):
             os.mkdir(localPath)
 
-        print "gvfs-copy {} {}".format(fullRemotePath, fullLocalPath)
-        call("gvfs-copy " + fullRemotePath + " " + fullLocalPath, shell=True)
+        print "gvfs-copy {} {}".format(fullEscapedRemotePath, fullEscapedLocalPath)
+        call("gvfs-copy " + fullEscapedRemotePath + " " + fullEscapedLocalPath, shell=True)
 
 
 def deleteFromLocal(fileList, localDirectory):
     for filename in fileList:
         fullLocalPath = localDirectory + filename
-        fullLocalPath = helper.escapeString(fullLocalPath)
-        print "gvfs-rm {}".format(fullLocalPath)
-        call("gvfs-rm " + fullLocalPath, shell=True)
+        fullEscapedLocalPath = helper.escapeString(fullLocalPath)
+
+        print "gvfs-rm {}".format(fullEscapedLocalPath)
+        call("gvfs-rm " + fullEscapedLocalPath, shell=True)
+
+        localPath = os.path.split(fullLocalPath)[0]
+
+        if(len(os.listdir(localPath)) == 0):
+            os.rmdir(localPath)
+
 
 def _getFullPathToRemote(finalPath):
     deviceNames = os.listdir(PARTIALPATHTOREMOTE)
