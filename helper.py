@@ -74,3 +74,21 @@ def removeFilesFromListBox(localFiles, remoteFiles, listbox, selectAll):
                 remoteFiles.remove(listbox.get(index))
             except KeyError:
                 pass
+
+            
+def escapeString(string):
+    escapeCharacters = [
+            ",",
+            "?",
+            "[",
+            "]",
+            " ",
+            "!",
+            ]
+
+    returnString = string
+
+    for char in escapeCharacters:
+        returnString = returnString.replace(char, "\\" + char)
+
+    return returnString

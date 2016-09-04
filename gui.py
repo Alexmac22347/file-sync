@@ -276,34 +276,65 @@ class MainPage(tk.Frame):
         global cachedLocalFiles, cachedRemoteFiles, latestLocalFiles, latestRemoteFiles
 
         if self.currentState == self.State.AddToRemote:
-            file_syncer.copyToRemote(self.listbox.get(0, self.listbox.size()),
-                                     gconfig.values['settings']['local'],
-                                     gconfig.values['settings']['remote'])
+            if selectAll:
+                file_syncer.copyToRemote(self.listbox.get(0, self.listbox.size()),
+                                         gconfig.values['settings']['local'],
+                                         gconfig.values['settings']['remote'])
+            else:
+                selectedFiles = []
+                for index in self.listbox.curselection():
+                    selectedFiles.append(self.listbox.get(index))
+                file_syncer.copyToRemote(selectedFiles,
+                                         gconfig.values['settings']['local'],
+                                         gconfig.values['settings']['remote'])
 
             helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             self.currentState = self.State.RemoveFromRemote
 
         elif self.currentState == self.State.RemoveFromRemote:
-            file_syncer.deleteFromRemote(self.listbox.get(0, self.listbox.size()),
-                                         gconfig.values['settings']['remote'])
+            if selectAll:
+                file_syncer.deleteFromRemote(self.listbox.get(0, self.listbox.size()),
+                                             gconfig.values['settings']['remote'])
+            else:
+                selectedFiles = []
+                for index in self.listbox.curselection():
+                    selectedFiles.append(self.listbox.get(index))
+                file_syncer.deleteFromRemote(selectedFiles,
+                                             gconfig.values['settings']['remote'])
 
             helper.removeFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             self.currentState = self.State.AddToLocal
 
         elif self.currentState == self.State.AddToLocal:
-            file_syncer.copyToLocal(self.listbox.get(0, self.listbox.size()),
-                                    gconfig.values['settings']['remote'],
-                                    gconfig.values['settings']['local'])
+            if selectAll:
+                file_syncer.copyToLocal(self.listbox.get(0, self.listbox.size()),
+                                        gconfig.values['settings']['remote'],
+                                        gconfig.values['settings']['local'])
+            else:
+                selectedFiles = []
+                for index in self.listbox.curselection():
+                    selectedFiles.append(self.listbox.get(index))
+                file_syncer.copyToLocal(selectedFiles,
+                                        gconfig.values['settings']['remote'],
+                                        gconfig.values['settings']['local'])
+
 
             helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 
             self.currentState = self.State.RemoveFromLocal
 
         elif self.currentState == self.State.RemoveFromLocal:
-            file_syncer.deleteFromLocal(self.listbox.get(0, self.listbox.size()),
-                                        gconfig.values['settings']['local'])
+            if selectAll:
+                file_syncer.deleteFromLocal(self.listbox.get(0, self.listbox.size()),
+                                            gconfig.values['settings']['local'])
+            else:
+                selectedFiles = []
+                for index in self.listbox.curselection():
+                    selectedFiles.append(self.lift.get(index))
+                file_syncer.deleteFromLocal(selectedFiles,
+                                            gconfig.values['settings']['local'])
 
             helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
 

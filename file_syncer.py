@@ -1,5 +1,6 @@
 import os
 from subprocess import call
+import helper
 
 PARTIALPATHTOREMOTE = '/run/user/1000/gvfs/'
 
@@ -25,26 +26,32 @@ def getLocalFileNames(directory):
 def copyToRemote(fileList, localDirectory, remoteDirectory):
     for filename in fileList:
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
+        fullRemotePath = helper.escapeString(fullRemotePath)
         fullLocalPath = localDirectory + filename
+        fullLocalPath = helper.escapeString(fullLocalPath)
         print "gvfs-copy {} {}".format(fullLocalPath, fullRemotePath)
 
 
 def deleteFromRemote(fileList, remoteDirectory):
     for filename in fileList:
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
+        fullRemotePath = helper.escapeString(fullRemotePath)
         print "gvfs-rm {}".format(fullRemotePath)
 
 
 def copyToLocal(fileList, remoteDirectory, localDirectory):
     for filename in fileList:
         fullLocalPath = localDirectory + filename
+        fullLocalPath = helper.escapeString(fullLocalPath)
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename) 
+        fullRemotePath = helper.escapeString(fullRemotePath)
         print "gvfs-copy {} {}".format(fullRemotePath, fullLocalPath)
 
 
 def deleteFromLocal(fileList, localDirectory):
     for filename in fileList:
         fullLocalPath = localDirectory + filename
+        fullLocalPath = helper.escapeString(fullLocalPath)
         print "gvfs-rm {}".format(fullLocalPath)
 
 def _getFullPathToRemote(finalPath):
