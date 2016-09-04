@@ -29,6 +29,13 @@ def copyToRemote(fileList, localDirectory, remoteDirectory):
         fullRemotePath = helper.escapeString(fullRemotePath)
         fullLocalPath = localDirectory + filename
         fullLocalPath = helper.escapeString(fullLocalPath)
+        #call("gvfs-copy " + fullLocalPath + " " + fullRemotePath, shell=True)
+
+        remotePath, remoteFilename = os.path.split(fullRemotePath)
+
+        if not os.path.exists(remotePath):
+            os.mkdir(remotePath)
+
         print "gvfs-copy {} {}".format(fullLocalPath, fullRemotePath)
         call("gvfs-copy " + fullLocalPath + " " + fullRemotePath, shell=True)
 
@@ -45,8 +52,14 @@ def copyToLocal(fileList, remoteDirectory, localDirectory):
     for filename in fileList:
         fullLocalPath = localDirectory + filename
         fullLocalPath = helper.escapeString(fullLocalPath)
-        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename) 
+        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
         fullRemotePath = helper.escapeString(fullRemotePath)
+
+        localPath, localFilename = os.path.split(fullLocalPath)
+
+        if not os.path.exists(localPath):
+            os.mkdir(localPath)
+
         print "gvfs-copy {} {}".format(fullRemotePath, fullLocalPath)
         call("gvfs-copy " + fullRemotePath + " " + fullLocalPath, shell=True)
 
