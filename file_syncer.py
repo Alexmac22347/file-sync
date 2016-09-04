@@ -30,6 +30,7 @@ def copyToRemote(fileList, localDirectory, remoteDirectory):
         fullLocalPath = localDirectory + filename
         fullLocalPath = helper.escapeString(fullLocalPath)
         print "gvfs-copy {} {}".format(fullLocalPath, fullRemotePath)
+        call("gvfs-copy " + fullLocalPath + " " + fullRemotePath, shell=True)
 
 
 def deleteFromRemote(fileList, remoteDirectory):
@@ -37,6 +38,7 @@ def deleteFromRemote(fileList, remoteDirectory):
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
         fullRemotePath = helper.escapeString(fullRemotePath)
         print "gvfs-rm {}".format(fullRemotePath)
+        call("gvfs-rm " + fullRemotePath, shell=True)
 
 
 def copyToLocal(fileList, remoteDirectory, localDirectory):
@@ -46,6 +48,7 @@ def copyToLocal(fileList, remoteDirectory, localDirectory):
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename) 
         fullRemotePath = helper.escapeString(fullRemotePath)
         print "gvfs-copy {} {}".format(fullRemotePath, fullLocalPath)
+        call("gvfs-copy " + fullRemotePath + " " + fullLocalPath, shell=True)
 
 
 def deleteFromLocal(fileList, localDirectory):
@@ -53,6 +56,7 @@ def deleteFromLocal(fileList, localDirectory):
         fullLocalPath = localDirectory + filename
         fullLocalPath = helper.escapeString(fullLocalPath)
         print "gvfs-rm {}".format(fullLocalPath)
+        call("gvfs-rm " + fullLocalPath, shell=True)
 
 def _getFullPathToRemote(finalPath):
     deviceNames = os.listdir(PARTIALPATHTOREMOTE)

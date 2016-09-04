@@ -84,6 +84,8 @@ def escapeString(string):
             "]",
             " ",
             "!",
+            "(",
+            ")"
             ]
 
     returnString = string
