@@ -10,3 +10,5 @@ TODO:
 - allow window resizing
 - prompt user for paths when new config is created
 - Make gui class deal only with GUI
+- Detect file changes with md5?
+- sort displayed files in alphabetical order
