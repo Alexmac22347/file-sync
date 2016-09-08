@@ -1,23 +1,12 @@
 import Tkinter as tk
-import config
+import selection_state
 import file_syncer
-import helper
 
 WINHEIGHT = 445
 WINWIDTH = 296
 
-# Use a global config class
-# Changes to this object are seen in every class
-gconfig = config.globalConfig
-gconfig.values['files'] = {}
-gconfig.values['settings'] = {}
-
-# sets which contain filenames
-# of "tracked" files
-cachedLocalFiles = set()
-cachedRemoteFiles = set()
-latestLocalFiles = set()
-latestRemoteFiles = set()
+# This object is accessible from all classes
+fileSyncer = file_syncer.globalFileSyncer
 
 
 class gui(tk.Tk):
@@ -31,33 +20,6 @@ class gui(tk.Tk):
 
         container = tk.Frame(self)
         container.grid()
-
-        # Read the config file. If it is empty, initialize it
-        global cachedLocalFiles, cachedRemoteFiles, latestLocalFiles, latestRemoteFiles
-        try:
-            gconfig.readConfig()
-            cachedLocalFiles = set(gconfig.values['files']['local'].split('\n'))
-            cachedRemoteFiles = set(gconfig.values['files']['remote'].split('\n'))
-
-            latestLocalFiles = file_syncer.getLocalFileNames(
-                gconfig.values['settings']['local'])
-            latestRemoteFiles = file_syncer.getRemoteFileNames(
-                gconfig.values['settings']['remote'])
-
-        except config.NoConfigException:
-            print "Initializing configuration file"
-            gconfig.values['settings']['local'] = '/home/alex/Music/'
-            gconfig.values['settings']['remote'] = '/Card/Music/'
-
-            cachedLocalFiles = file_syncer.getLocalFileNames(
-                gconfig.values['settings']['local'])
-            cachedRemoteFiles = file_syncer.getRemoteFileNames(
-                gconfig.values['settings']['remote'])
-
-            latestLocalFiles = cachedLocalFiles.copy()
-            latestRemoteFiles = cachedRemoteFiles.copy()
-
-            helper.writeConfigFilesToDisk(cachedLocalFiles, cachedRemoteFiles, gconfig)
 
         # This dictionary contains the two Frames,
         # MainPage and SettingsPage
@@ -80,69 +42,11 @@ class MainPage(tk.Frame):
     # This is used to represent what part of the program we are in.
     # It will help determine what to do when a button is pressed,
     # and what files to display in the list box
-    class State:
-        AddToRemote = 1
-        RemoveFromRemote = 2
-        AddToLocal = 3
-        RemoveFromLocal = 4
 
     def __init__(self, parent, controller):
-        self.currentState = self.State.AddToRemote
+        self.currentState = selection_state.AddToRemote
         tk.Frame.__init__(self, parent)
         self.initializeWidgets(controller)
-
-        self.addedToLocal = helper.getAddedFiles(
-            cachedLocalFiles,
-            latestLocalFiles)
-        self.removedFromLocal = helper.getRemovedFiles(
-            cachedLocalFiles,
-            latestLocalFiles)
-        self.addedToRemote = helper.getAddedFiles(
-            cachedRemoteFiles,
-            latestRemoteFiles)
-        self.removedFromRemote = helper.getRemovedFiles(
-            cachedRemoteFiles,
-            latestRemoteFiles)
-
-        # If a file is added to the local AND the remote directories, we update
-        # the config file, and update the data structures to reflect this.
-        # Same goes for files deleted locally AND remotely
-        commonAddedFiles = set.intersection(
-            self.addedToLocal, self.addedToRemote)
-        commonRemovedFiles = set.intersection(
-            self.removedFromLocal, self.removedFromRemote)
-
-        helper.appendFilesToConfig(commonAddedFiles, commonAddedFiles, gconfig)
-        helper.removeFilesFromConfig(commonRemovedFiles, commonRemovedFiles, gconfig)
-
-        self.addedToLocal.difference_update(commonAddedFiles)
-        self.addedToRemote.difference_update(commonAddedFiles)
-
-        self.removedFromLocal.difference_update(commonRemovedFiles)
-        self.removedFromRemote.difference_update(commonRemovedFiles)
-
-        # If a file is added to the local directory, but it already exists in
-        # the remote directory, and already appears under the "remote" section 
-        # of config.ini, we can simply add it to the "local" section of config.ini
-        # without asking the user. In a way, it's already been "copied" to remote.
-        # Same goes for other cases
-        addedLocallyButExistsInRemote = set.intersection(self.addedToLocal, latestRemoteFiles)
-        removedLocallyButDoesntExistInRemote = self.removedFromLocal - latestRemoteFiles
-        addedRemotelyButExistsInLocal = set.intersection(self.addedToRemote, latestLocalFiles)
-        removedRemotelyButDoesntExistInLocal = self.removedFromRemote - latestLocalFiles
-
-        # Update the config
-        helper.appendFilesToConfig(addedLocallyButExistsInRemote, addedRemotelyButExistsInLocal, gconfig)
-        helper.removeFilesFromConfig(removedLocallyButDoesntExistInRemote, removedRemotelyButDoesntExistInLocal, gconfig)
-
-        # Update our data
-        self.addedToLocal.symmetric_difference_update(addedLocallyButExistsInRemote)
-        self.removedFromLocal.symmetric_difference_update(removedLocallyButDoesntExistInRemote)
-        self.addedToRemote.symmetric_difference_update(addedRemotelyButExistsInLocal)
-        self.removedFromRemote.symmetric_difference_update(removedRemotelyButDoesntExistInLocal)
-
-        gconfig.writeConfig()
-
 
     def initializeWidgets(self, controller):
         # Create the grid layout manager
@@ -192,9 +96,7 @@ class MainPage(tk.Frame):
         self.infoBox = tk.Label(
             self, width=30, height=2, anchor='nw', fg='black', bg='white', relief='ridge', justify=tk.LEFT)
 
-    # This will draw the GUI based on the current state
     def showGUI(self):
-        global cachedLocalFiles, cachedRemoteFiles
         # These things here will always be visible
         # no matter what state we're in
         self.listbox.grid(row=0, column=0, sticky='NSEW')
@@ -207,61 +109,60 @@ class MainPage(tk.Frame):
         self.skipButton.grid(row=4, column=0, sticky='EW')
         self.infoBox.grid(row=5, column=0, sticky='EW')
 
-        if self.currentState == self.State.AddToRemote:
-            for filename in self.addedToLocal:
+        if self.currentState == selection_state.AddToRemote:
+            for filename in fileSyncer.addedToLocal:
                 self.listbox.insert(0, filename)
 
-            if self.addedToLocal:
+            if fileSyncer.addedToLocal:
                 self.infoBox['text'] = "These files have been added to " + \
-                    gconfig.values['settings']['local']
+                    fileSyncer.gconfig.values['settings']['local']
             else:
                 self.infoBox['text'] = "No new files in " + \
-                    gconfig.values['settings']['local']
+                    fileSyncer.gconfig.values['settings']['local']
 
             self.updateAllButton['text'] = "Copy all to remote"
             self.updateSelectedButton['text'] = "Copy selected to remote"
             return
 
-        if self.currentState == self.State.RemoveFromRemote:
-            for filename in self.removedFromLocal:
+        if self.currentState == selection_state.RemoveFromRemote:
+            for filename in fileSyncer.removedFromLocal:
                 self.listbox.insert(0, filename)
 
-            if self.removedFromLocal:
+            if fileSyncer.removedFromLocal:
                 self.infoBox['text'] = "These files have been deleted from " + \
-                    gconfig.values['settings']['local']
+                    fileSyncer.gconfig.values['settings']['local']
             else:
                 self.infoBox['text'] = "No deleted files in " + \
-                    gconfig.values['settings']['local']
+                    fileSyncer.gconfig.values['settings']['local']
 
             self.updateAllButton['text'] = "Remove all from remote"
             self.updateSelectedButton['text'] = "Remove selected from remote"
             return
 
-        if self.currentState == self.State.AddToLocal:
-            for filename in self.addedToRemote:
+        if self.currentState == selection_state.AddToLocal:
+            for filename in fileSyncer.addedToRemote:
                 self.listbox.insert(0, filename)
 
-            if self.addedToRemote:
+            if fileSyncer.addedToRemote:
                 self.infoBox['text'] = "These files have been added to (Device)" + \
-                    gconfig.values['settings']['remote']
+                    fileSyncer.gconfig.values['settings']['remote']
             else:
-                self.infoBox[
-                    'text'] = "No new files in (Device)" + gconfig.values['settings']['remote']
+                self.infoBox['text'] = "No new files in (Device)" + fileSyncer.gconfig.values['settings']['remote']
 
             self.updateAllButton['text'] = "Copy all to local"
             self.updateSelectedButton['text'] = "Copy selected to local"
             return
 
-        if self.currentState == self.State.RemoveFromLocal:
-            for filename in self.removedFromRemote:
+        if self.currentState == selection_state.RemoveFromLocal:
+            for filename in fileSyncer.removedFromRemote:
                 self.listbox.insert(0, filename)
 
-            if self.removedFromRemote:
+            if fileSyncer.removedFromRemote:
                 self.infoBox['text'] = "These files have been deleted from (Device)" + \
-                    gconfig.values['settings']['remote']
+                    fileSyncer.gconfig.values['settings']['remote']
             else:
                 self.infoBox[
-                    'text'] = "No deleted files in (Device)" + gconfig.values['settings']['remote']
+                    'text'] = "No deleted files in (Device)" + fileSyncer.gconfig.values['settings']['remote']
 
             self.skipButton['text'] = "Quit"
             self.updateAllButton['text'] = "Remove all from local"
@@ -273,90 +174,32 @@ class MainPage(tk.Frame):
         controller.showFrame(SettingsPage)
 
     def onUpdateButtonClick(self, selectAll):
-        global cachedLocalFiles, cachedRemoteFiles, latestLocalFiles, latestRemoteFiles
+        selectedFiles = []
 
-        if self.currentState == self.State.AddToRemote:
-            if selectAll:
-                file_syncer.copyToRemote(self.listbox.get(0, self.listbox.size()),
-                                         gconfig.values['settings']['local'],
-                                         gconfig.values['settings']['remote'])
-            else:
-                selectedFiles = []
-                for index in self.listbox.curselection():
-                    selectedFiles.append(self.listbox.get(index))
-                file_syncer.copyToRemote(selectedFiles,
-                                         gconfig.values['settings']['local'],
-                                         gconfig.values['settings']['remote'])
+        if selectAll:
+            selectedFiles = self.listbox.get(0, self.listbox.size())
+        else:
+            for index in self.listbox.curselection():
+                selectedFiles.append(self.listbox.get(index))
 
-            helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
+        fileSyncer.onUpdateButtonClick(self.currentState, selectedFiles)
 
-            self.currentState = self.State.RemoveFromRemote
-
-        elif self.currentState == self.State.RemoveFromRemote:
-            if selectAll:
-                file_syncer.deleteFromRemote(self.listbox.get(0, self.listbox.size()),
-                                             gconfig.values['settings']['remote'])
-            else:
-                selectedFiles = []
-                for index in self.listbox.curselection():
-                    selectedFiles.append(self.listbox.get(index))
-                file_syncer.deleteFromRemote(selectedFiles,
-                                             gconfig.values['settings']['remote'])
-
-            helper.removeFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
-
-            self.currentState = self.State.AddToLocal
-
-        elif self.currentState == self.State.AddToLocal:
-            if selectAll:
-                file_syncer.copyToLocal(self.listbox.get(0, self.listbox.size()),
-                                        gconfig.values['settings']['remote'],
-                                        gconfig.values['settings']['local'])
-            else:
-                selectedFiles = []
-                for index in self.listbox.curselection():
-                    selectedFiles.append(self.listbox.get(index))
-                file_syncer.copyToLocal(selectedFiles,
-                                        gconfig.values['settings']['remote'],
-                                        gconfig.values['settings']['local'])
-
-
-            helper.addFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
-
-            self.currentState = self.State.RemoveFromLocal
-
-        elif self.currentState == self.State.RemoveFromLocal:
-            if selectAll:
-                file_syncer.deleteFromLocal(self.listbox.get(0, self.listbox.size()),
-                                            gconfig.values['settings']['local'])
-            else:
-                selectedFiles = []
-                for index in self.listbox.curselection():
-                    selectedFiles.append(self.lift.get(index))
-                file_syncer.deleteFromLocal(selectedFiles,
-                                            gconfig.values['settings']['local'])
-
-            helper.removeFilesFromListBox(cachedLocalFiles, cachedRemoteFiles, self.listbox, selectAll)
-
-            # Remember to write config to disk before exiting
-            helper.writeConfigFilesToDisk(cachedLocalFiles, cachedRemoteFiles, gconfig)
-            exit()
-
-        helper.writeConfigFilesToDisk(cachedLocalFiles, cachedRemoteFiles, gconfig)
+        self._advanceState()
         self.showGUI()
-
 
     def onSkipButtonClick(self):
-        if self.currentState == self.State.AddToRemote:
-            self.currentState = self.State.RemoveFromRemote
-        elif self.currentState == self.State.RemoveFromRemote:
-            self.currentState = self.State.AddToLocal
-        elif self.currentState == self.State.AddToLocal:
-            self.currentState = self.State.RemoveFromLocal
-        elif self.currentState == self.State.RemoveFromLocal:
-            exit()
-
+        self._advanceState()
         self.showGUI()
+
+    def _advanceState(self):
+        if self.currentState == selection_state.AddToRemote:
+            self.currentState = selection_state.RemoveFromRemote
+        elif self.currentState == selection_state.RemoveFromRemote:
+            self.currentState = selection_state.AddToLocal
+        elif self.currentState == selection_state.AddToLocal:
+            self.currentState = selection_state.RemoveFromLocal
+        elif self.currentState == selection_state.RemoveFromLocal:
+            exit()
 
 
 class SettingsPage(tk.Frame):
@@ -399,6 +242,7 @@ class SettingsPage(tk.Frame):
             self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
+        # TODO: get the directories. we dont have config anymore
         self.localDirectory.set(gconfig.values['settings']['local'])
         self.remoteDirectory.set(gconfig.values['settings']['remote'])
 
@@ -414,11 +258,12 @@ class SettingsPage(tk.Frame):
         controller.showFrame(MainPage)
 
     def onSaveButtonClick(self, controller):
+        # TODO: Do this in the file syncer?
         self.localDirectory.get()
         self.remoteDirectory.get()
-        gconfig.values['settings']['local'] = self.localDirectory.get()
-        gconfig.values['settings']['remote'] = self.remoteDirectory.get()
-        # All the filenames are lost here, which makes sense because
-        # we changed to a new directory
-        gconfig.writeConfig()
+
+        fileSyncer.gconfig.values['settings']['local'] = self.localDirectory.get()
+        fileSyncer.gconfig.values['settings']['remote'] = self.remoteDirectory.get()
+
+        fileSyncer.gconfig.writeConfig()
         controller.showFrame(MainPage)

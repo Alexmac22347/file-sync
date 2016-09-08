@@ -44,36 +44,18 @@ def removeFilesFromConfig(localFiles, remoteFiles, config):
         config.values['files']['remote'] = config.values['files']['remote'].replace(filename + '\n', "")
 
 
-def addFilesFromListBox(localFiles, remoteFiles, listbox, selectAll):
-    if selectAll:
-        localFiles.update(
-            set(listbox.get(0, listbox.size())))
-        remoteFiles.update(
-            set(listbox.get(0, listbox.size())))
-    else:
-        for index in listbox.curselection():
-            localFiles.add(listbox.get(index))
-            remoteFiles.add(listbox.get(index))
+def addFilesToCache(localFiles, remoteFiles, selectedFiles):
+    localFiles.update(
+        set(selectedFiles))
+    remoteFiles.update(
+        set(selectedFiles))
 
 
-def removeFilesFromListBox(localFiles, remoteFiles, listbox, selectAll):
-
-    if selectAll:
-        localFiles.difference_update(
-            set(listbox.get(0, listbox.size())))
-        remoteFiles.difference_update(
-            set(listbox.get(0, listbox.size())))
-    else:
-        for index in listbox.curselection():
-            try:
-                localFiles.remove(listbox.get(index))
-            except KeyError:
-                pass
-
-            try:
-                remoteFiles.remove(listbox.get(index))
-            except KeyError:
-                pass
+def removeFilesFromCache(localFiles, remoteFiles, selectedFiles):
+    localFiles.difference_update(
+        set(selectedFiles))
+    remoteFiles.difference_update(
+        set(selectedFiles))
 
             
 def escapeString(string):

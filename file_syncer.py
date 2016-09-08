@@ -1,99 +1,148 @@
-import os
-from subprocess import call
+import config
+import selection_state
 import helper
-
-PARTIALPATHTOREMOTE = '/run/user/1000/gvfs/'
-
-
-def getRemoteFileNames(directory):
-    # Extra stuff to get the path to the phone.
-    # It's a different path every time the phone is plugged in
-
-    fullPathToRemote = _getFullPathToRemote(directory)
-
-    return getLocalFileNames(fullPathToRemote)
+import disk_interface
 
 
-def getLocalFileNames(directory):
-    files = set()
-    for dirpath, dirnames, filenames in os.walk(directory):
-        for filename in filenames:
-            files.add(dirpath[len(directory):] + "/" + filename)
+class file_syncer:
 
-    return files
+    def __init__(self):
+        self.gconfig = config.config()
+        self.gconfig.values['files'] = {}
+        self.gconfig.values['settings'] = {}
 
+        self.cachedLocalFiles = set()
+        self.cachedRemoteFiles = set()
+        self.latestLocalFiles = set()
+        self.latestRemoteFiles = set()
 
-def copyToRemote(fileList, localDirectory, remoteDirectory):
-    for filename in fileList:
-        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
-        fullLocalPath = localDirectory + filename
-        fullEscapedRemotePathLocalPath = helper.escapeString(fullLocalPath)
+        # Try to read from the config file. create it if it does not exist
+        try:
+            self.gconfig.readConfig()
+            self.cachedLocalFiles = set(
+                self.gconfig.values['files']['local'].split('\n'))
+            self.cachedRemoteFiles = set(
+                self.gconfig.values['files']['remote'].split('\n'))
 
-        remotePath = os.path.split(fullRemotePath)[0]
+            self.latestLocalFiles = disk_interface.getLocalFileNames(
+                self.gconfig.values['settings']['local'])
+            self.latestRemoteFiles = disk_interface.getRemoteFileNames(
+                self.gconfig.values['settings']['remote'])
 
-        if not os.path.exists(remotePath):
-            os.mkdir(remotePath)
+        except config.NoConfigException:
+            print "Initializing configuration file"
+            self.gconfig.values['settings']['local'] = '/home/alex/Music/'
+            self.gconfig.values['settings']['remote'] = '/Card/Music/'
 
-        print "gvfs-copy {} {}".format(fullEscapedRemotePathLocalPath, fullEscapedRemotePath)
-        call("gvfs-copy " + fullEscapedRemotePathLocalPath + " " + fullEscapedRemotePath, shell=True)
+            self.cachedLocalFiles = disk_interface.getLocalFileNames(
+                self.gconfig.values['settings']['local'])
+            self.cachedRemoteFiles = disk_interface.getRemoteFileNames(
+                self.gconfig.values['settings']['remote'])
 
+            self.latestLocalFiles = self.cachedLocalFiles.copy()
+            self.latestRemoteFiles = self.cachedRemoteFiles.copy()
 
-def deleteFromRemote(fileList, remoteDirectory):
-    for filename in fileList:
-        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
+            helper.writeConfigFilesToDisk(
+                self.cachedLocalFiles, self.cachedRemoteFiles, self.gconfig)
 
-        print "gvfs-rm {}".format(fullEscapedRemotePath)
-        call("gvfs-rm " + fullEscapedRemotePath, shell=True)
+        self.addedToLocal = helper.getAddedFiles(
+            self.cachedLocalFiles,
+            self.latestLocalFiles)
+        self.removedFromLocal = helper.getRemovedFiles(
+            self.cachedLocalFiles,
+            self.latestLocalFiles)
+        self.addedToRemote = helper.getAddedFiles(
+            self.cachedRemoteFiles,
+            self.latestRemoteFiles)
+        self.removedFromRemote = helper.getRemovedFiles(
+            self.cachedRemoteFiles,
+            self.latestRemoteFiles)
 
-        remotePath = os.path.split(fullRemotePath)[0]
-        print "Hey " + remotePath
+        # If a file is added to the local AND the remote directories, we update
+        # the config file, and update the data structures to reflect this.
+        # Same goes for files deleted locally AND remotely
+        commonAddedFiles = set.intersection(
+            self.addedToLocal, self.addedToRemote)
+        commonRemovedFiles = set.intersection(
+            self.removedFromLocal, self.removedFromRemote)
 
-        if(len(os.listdir(remotePath)) == 0):
-            os.rmdir(remotePath)
+        helper.appendFilesToConfig(
+            commonAddedFiles, commonAddedFiles, self.gconfig)
+        helper.removeFilesFromConfig(
+            commonRemovedFiles, commonRemovedFiles, self.gconfig)
 
+        self.addedToLocal.difference_update(commonAddedFiles)
+        self.addedToRemote.difference_update(commonAddedFiles)
 
-def copyToLocal(fileList, remoteDirectory, localDirectory):
-    for filename in fileList:
-        fullLocalPath = localDirectory + filename
-        fullEscapedLocalPath = helper.escapeString(fullLocalPath)
-        fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
+        self.removedFromLocal.difference_update(commonRemovedFiles)
+        self.removedFromRemote.difference_update(commonRemovedFiles)
 
-        localPath = os.path.split(fullLocalPath)[0]
+        # If a file is added to the local directory, but it already exists in
+        # the remote directory, and already appears under the "remote" section
+        # of config.ini, we can simply add it to the "local" section of config.ini
+        # without asking the user. In a way, it's already been "copied" to remote.
+        # Same goes for other cases
+        addedLocallyButExistsInRemote = set.intersection(
+            self.addedToLocal, self.latestRemoteFiles)
+        removedLocallyButDoesntExistInRemote = self.removedFromLocal - self.latestRemoteFiles
+        addedRemotelyButExistsInLocal = set.intersection(
+            self.addedToRemote, self.latestLocalFiles)
+        removedRemotelyButDoesntExistInLocal = self.removedFromRemote - self.latestLocalFiles
 
-        if not os.path.exists(localPath):
-            os.mkdir(localPath)
+        # Update the config
+        helper.appendFilesToConfig(
+            addedLocallyButExistsInRemote, addedRemotelyButExistsInLocal, self.gconfig)
+        helper.removeFilesFromConfig(
+            removedLocallyButDoesntExistInRemote, removedRemotelyButDoesntExistInLocal, self.gconfig)
 
-        print "gvfs-copy {} {}".format(fullEscapedRemotePath, fullEscapedLocalPath)
-        call("gvfs-copy " + fullEscapedRemotePath + " " + fullEscapedLocalPath, shell=True)
+        # Update our data
+        self.addedToLocal.symmetric_difference_update(
+            addedLocallyButExistsInRemote)
+        self.removedFromLocal.symmetric_difference_update(
+            removedLocallyButDoesntExistInRemote)
+        self.addedToRemote.symmetric_difference_update(
+            addedRemotelyButExistsInLocal)
+        self.removedFromRemote.symmetric_difference_update(
+            removedRemotelyButDoesntExistInLocal)
 
+        self.gconfig.writeConfig()
 
-def deleteFromLocal(fileList, localDirectory):
-    for filename in fileList:
-        fullLocalPath = localDirectory + filename
-        fullEscapedLocalPath = helper.escapeString(fullLocalPath)
+    def onUpdateButtonClick(self, state, selectedFiles):
 
-        print "gvfs-rm {}".format(fullEscapedLocalPath)
-        call("gvfs-rm " + fullEscapedLocalPath, shell=True)
+        if state == selection_state.AddToRemote:
+            disk_interface.copyToRemote(selectedFiles,
+                                     self.gconfig.values['settings']['local'],
+                                     self.gconfig.values['settings']['remote'])
 
-        localPath = os.path.split(fullLocalPath)[0]
+            helper.addFilesToCache(
+                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
 
-        if(len(os.listdir(localPath)) == 0):
-            os.rmdir(localPath)
+        elif state == selection_state.RemoveFromRemote:
+            disk_interface.deleteFromRemote(selectedFiles,
+                                         self.gconfig.values['settings']['remote'])
 
+            helper.removeFilesFromCache(
+                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
 
-def _getFullPathToRemote(finalPath):
-    deviceNames = os.listdir(PARTIALPATHTOREMOTE)
-    if not _isSingleDeviceAvailable():
-        print "Error getting single device"
-        exit()
+        elif state == selection_state.AddToLocal:
+            disk_interface.copyToLocal(selectedFiles,
+                                    self.gconfig.values['settings']['remote'],
+                                    self.gconfig.values['settings']['local'])
 
-    return PARTIALPATHTOREMOTE + deviceNames[0] + finalPath
+            helper.addFilesToCache(
+                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
 
+        elif state == selection_state.RemoveFromLocal:
+            disk_interface.deleteFromLocal(selectedFiles,
+                                        self.gconfig.values['settings']['local'])
 
-def _isSingleDeviceAvailable():
-    if len(os.listdir(PARTIALPATHTOREMOTE)) == 1:
-        return True
-    return False
+            helper.removeFilesFromCache(
+                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
+
+        # Remember to write config to disk before exiting
+        # Maybe we should write this each time we switch states
+        helper.writeConfigFilesToDisk(
+            self.cachedLocalFiles, self.cachedRemoteFiles, self.gconfig)
+
+# This is a global file syncer made available to other modules
+globalFileSyncer = file_syncer()

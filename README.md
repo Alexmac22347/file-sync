@@ -7,8 +7,8 @@ Eg, if you put a huge compilation on your phone,
     from your pc as well.
 
 TODO:
-- allow window resizing
-- prompt user for paths when new config is created
-- Make gui class deal only with GUI
+- Sort displayed files in alphabetical order
+- Prompt user for paths when new config is created
+- Allow window resizing
 - Detect file changes with md5?
-- sort displayed files in alphabetical order
+- Get rid of helper module

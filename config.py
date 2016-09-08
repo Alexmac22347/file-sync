@@ -3,7 +3,6 @@ import ConfigParser
 CONFIGFILENAME = 'config.ini'
 
 
-# TODO: Make filename passable from command line
 class config:
 
     def __init__(self):
@@ -24,8 +23,8 @@ class config:
         for section in self.configParser.sections():
             self.values[section] = {}
             for option in self.configParser.options(section):
-                self.values[section][option] = self.configParser.get(section, option)
-
+                self.values[section][
+                    option] = self.configParser.get(section, option)
 
     def writeConfig(self):
         for section in self.values.keys():
@@ -42,5 +41,3 @@ class config:
 
 class NoConfigException(Exception):
     pass
-
-globalConfig = config()
