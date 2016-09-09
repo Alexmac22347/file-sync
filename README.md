@@ -7,7 +7,6 @@ Eg, if you put a huge compilation on your phone,
     from your pc as well.
 
 TODO:
-- Sort displayed files in alphabetical order
 - Prompt user for paths when new config is created
 - Allow window resizing
 - Detect file changes with md5?

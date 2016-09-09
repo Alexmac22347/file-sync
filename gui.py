@@ -110,7 +110,7 @@ class MainPage(tk.Frame):
         self.infoBox.grid(row=5, column=0, sticky='EW')
 
         if self.currentState == selection_state.AddToRemote:
-            for filename in fileSyncer.addedToLocal:
+            for filename in sorted(list(fileSyncer.addedToLocal), reverse=True):
                 self.listbox.insert(0, filename)
 
             if fileSyncer.addedToLocal:
@@ -125,7 +125,7 @@ class MainPage(tk.Frame):
             return
 
         if self.currentState == selection_state.RemoveFromRemote:
-            for filename in fileSyncer.removedFromLocal:
+            for filename in sorted(list(fileSyncer.removedFromLocal), reverse=True):
                 self.listbox.insert(0, filename)
 
             if fileSyncer.removedFromLocal:
@@ -140,7 +140,7 @@ class MainPage(tk.Frame):
             return
 
         if self.currentState == selection_state.AddToLocal:
-            for filename in fileSyncer.addedToRemote:
+            for filename in sorted(list(fileSyncer.addedToRemote), reverse=True):
                 self.listbox.insert(0, filename)
 
             if fileSyncer.addedToRemote:
@@ -154,7 +154,7 @@ class MainPage(tk.Frame):
             return
 
         if self.currentState == selection_state.RemoveFromLocal:
-            for filename in fileSyncer.removedFromRemote:
+            for filename in sorted(list(fileSyncer.removedFromRemote), reverse=True):
                 self.listbox.insert(0, filename)
 
             if fileSyncer.removedFromRemote:
