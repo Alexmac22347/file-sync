@@ -122,9 +122,8 @@ class MainPage(tk.Frame):
 
             self.updateAllButton['text'] = "Copy all to remote"
             self.updateSelectedButton['text'] = "Copy selected to remote"
-            return
 
-        if self.currentState == selection_state.RemoveFromRemote:
+        elif self.currentState == selection_state.RemoveFromRemote:
             for filename in sorted(list(fileSyncer.removedFromLocal), reverse=True):
                 self.listbox.insert(0, filename)
 
@@ -137,9 +136,8 @@ class MainPage(tk.Frame):
 
             self.updateAllButton['text'] = "Remove all from remote"
             self.updateSelectedButton['text'] = "Remove selected from remote"
-            return
 
-        if self.currentState == selection_state.AddToLocal:
+        elif self.currentState == selection_state.AddToLocal:
             for filename in sorted(list(fileSyncer.addedToRemote), reverse=True):
                 self.listbox.insert(0, filename)
 
@@ -151,9 +149,8 @@ class MainPage(tk.Frame):
 
             self.updateAllButton['text'] = "Copy all to local"
             self.updateSelectedButton['text'] = "Copy selected to local"
-            return
 
-        if self.currentState == selection_state.RemoveFromLocal:
+        elif self.currentState == selection_state.RemoveFromLocal:
             for filename in sorted(list(fileSyncer.removedFromRemote), reverse=True):
                 self.listbox.insert(0, filename)
 
@@ -167,7 +164,6 @@ class MainPage(tk.Frame):
             self.skipButton['text'] = "Quit"
             self.updateAllButton['text'] = "Remove all from local"
             self.updateSelectedButton['text'] = "Remove selected from local"
-            return
 
     # Various event handlers
     def onSettingsButtonClick(self, controller):
