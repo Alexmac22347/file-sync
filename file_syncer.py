@@ -19,31 +19,24 @@ class file_syncer:
         # Try to read from the config file. create it if it does not exist
         try:
             self.gconfig.readConfig()
-            self.cachedLocalFiles = set(
-                self.gconfig.values['files']['local'].split('\n'))
-            self.cachedRemoteFiles = set(
-                self.gconfig.values['files']['remote'].split('\n'))
+            self.cachedLocalFiles = set(self.gconfig.values['files']['local'].split('\n'))
+            self.cachedRemoteFiles = set(self.gconfig.values['files']['remote'].split('\n'))
 
-            self.latestLocalFiles = disk_interface.getLocalFileNames(
-                self.gconfig.values['settings']['local'])
-            self.latestRemoteFiles = disk_interface.getRemoteFileNames(
-                self.gconfig.values['settings']['remote'])
+            self.latestLocalFiles = disk_interface.getLocalFileNames(self.gconfig.values['settings']['local'])
+            self.latestRemoteFiles = disk_interface.getRemoteFileNames(self.gconfig.values['settings']['remote'])
 
         except config.NoConfigException:
             print "Initializing configuration file"
             self.gconfig.values['settings']['local'] = '/home/alex/Music/'
             self.gconfig.values['settings']['remote'] = '/Card/Music/'
 
-            self.cachedLocalFiles = disk_interface.getLocalFileNames(
-                self.gconfig.values['settings']['local'])
-            self.cachedRemoteFiles = disk_interface.getRemoteFileNames(
-                self.gconfig.values['settings']['remote'])
+            self.cachedLocalFiles = disk_interface.getLocalFileNames(self.gconfig.values['settings']['local'])
+            self.cachedRemoteFiles = disk_interface.getRemoteFileNames(self.gconfig.values['settings']['remote'])
 
             self.latestLocalFiles = self.cachedLocalFiles.copy()
             self.latestRemoteFiles = self.cachedRemoteFiles.copy()
 
-            helper.writeConfigFilesToDisk(
-                self.cachedLocalFiles, self.cachedRemoteFiles, self.gconfig)
+            helper.writeConfigFilesToDisk(self.cachedLocalFiles, self.cachedRemoteFiles, self.gconfig)
 
         self.addedToLocal = helper.getAddedFiles(
             self.cachedLocalFiles,
@@ -61,15 +54,11 @@ class file_syncer:
         # If a file is added to the local AND the remote directories, we update
         # the config file, and update the data structures to reflect this.
         # Same goes for files deleted locally AND remotely
-        commonAddedFiles = set.intersection(
-            self.addedToLocal, self.addedToRemote)
-        commonRemovedFiles = set.intersection(
-            self.removedFromLocal, self.removedFromRemote)
+        commonAddedFiles = set.intersection(self.addedToLocal, self.addedToRemote)
+        commonRemovedFiles = set.intersection(self.removedFromLocal, self.removedFromRemote)
 
-        helper.appendFilesToConfig(
-            commonAddedFiles, commonAddedFiles, self.gconfig)
-        helper.removeFilesFromConfig(
-            commonRemovedFiles, commonRemovedFiles, self.gconfig)
+        helper.appendFilesToConfig(commonAddedFiles, commonAddedFiles, self.gconfig)
+        helper.removeFilesFromConfig(commonRemovedFiles, commonRemovedFiles, self.gconfig)
 
         self.addedToLocal.difference_update(commonAddedFiles)
         self.addedToRemote.difference_update(commonAddedFiles)
@@ -82,28 +71,20 @@ class file_syncer:
         # of config.ini, we can simply add it to the "local" section of config.ini
         # without asking the user. In a way, it's already been "copied" to remote.
         # Same goes for other cases
-        addedLocallyButExistsInRemote = set.intersection(
-            self.addedToLocal, self.latestRemoteFiles)
+        addedLocallyButExistsInRemote = set.intersection(self.addedToLocal, self.latestRemoteFiles)
         removedLocallyButDoesntExistInRemote = self.removedFromLocal - self.latestRemoteFiles
-        addedRemotelyButExistsInLocal = set.intersection(
-            self.addedToRemote, self.latestLocalFiles)
+        addedRemotelyButExistsInLocal = set.intersection(self.addedToRemote, self.latestLocalFiles)
         removedRemotelyButDoesntExistInLocal = self.removedFromRemote - self.latestLocalFiles
 
         # Update the config
-        helper.appendFilesToConfig(
-            addedLocallyButExistsInRemote, addedRemotelyButExistsInLocal, self.gconfig)
-        helper.removeFilesFromConfig(
-            removedLocallyButDoesntExistInRemote, removedRemotelyButDoesntExistInLocal, self.gconfig)
+        helper.appendFilesToConfig(addedLocallyButExistsInRemote, addedRemotelyButExistsInLocal, self.gconfig)
+        helper.removeFilesFromConfig(removedLocallyButDoesntExistInRemote, removedRemotelyButDoesntExistInLocal, self.gconfig)
 
         # Update our data
-        self.addedToLocal.symmetric_difference_update(
-            addedLocallyButExistsInRemote)
-        self.removedFromLocal.symmetric_difference_update(
-            removedLocallyButDoesntExistInRemote)
-        self.addedToRemote.symmetric_difference_update(
-            addedRemotelyButExistsInLocal)
-        self.removedFromRemote.symmetric_difference_update(
-            removedRemotelyButDoesntExistInLocal)
+        self.addedToLocal.symmetric_difference_update(addedLocallyButExistsInRemote)
+        self.removedFromLocal.symmetric_difference_update(removedLocallyButDoesntExistInRemote)
+        self.addedToRemote.symmetric_difference_update(addedRemotelyButExistsInLocal)
+        self.removedFromRemote.symmetric_difference_update(removedRemotelyButDoesntExistInLocal)
 
         self.gconfig.writeConfig()
 
@@ -114,35 +95,30 @@ class file_syncer:
                                      self.gconfig.values['settings']['local'],
                                      self.gconfig.values['settings']['remote'])
 
-            helper.addFilesToCache(
-                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
+            helper.addFilesToCache(self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
 
         elif state == selection_state.RemoveFromRemote:
             disk_interface.deleteFromRemote(selectedFiles,
                                          self.gconfig.values['settings']['remote'])
 
-            helper.removeFilesFromCache(
-                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
+            helper.removeFilesFromCache(self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
 
         elif state == selection_state.AddToLocal:
             disk_interface.copyToLocal(selectedFiles,
                                     self.gconfig.values['settings']['remote'],
                                     self.gconfig.values['settings']['local'])
 
-            helper.addFilesToCache(
-                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
+            helper.addFilesToCache(self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
 
         elif state == selection_state.RemoveFromLocal:
             disk_interface.deleteFromLocal(selectedFiles,
                                         self.gconfig.values['settings']['local'])
 
-            helper.removeFilesFromCache(
-                self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
+            helper.removeFilesFromCache(self.cachedLocalFiles, self.cachedRemoteFiles, selectedFiles)
 
         # Remember to write config to disk before exiting
         # Maybe we should write this each time we switch states
-        helper.writeConfigFilesToDisk(
-            self.cachedLocalFiles, self.cachedRemoteFiles, self.gconfig)
+        helper.writeConfigFilesToDisk(self.cachedLocalFiles, self.cachedRemoteFiles, self.gconfig)
 
 # This is a global file syncer made available to other modules
 globalFileSyncer = file_syncer()
