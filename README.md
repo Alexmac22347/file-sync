@@ -30,6 +30,7 @@ be reflected in the config.ini file, but will not appear in the user interface.
 
 TODO:
 - Prompt user for paths when new config is created
+- Rename the button in the settingspage to something more clear
 - Display error if single phone not detected
 - Add support for USB mass storage
 - Allow window resizing

@@ -238,9 +238,8 @@ class SettingsPage(tk.Frame):
             self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
-        # TODO: get the directories. we dont have config anymore
-        self.localDirectory.set(gconfig.values['settings']['local'])
-        self.remoteDirectory.set(gconfig.values['settings']['remote'])
+        self.localDirectory.set(fileSyncer.gconfig.values['settings']['local'])
+        self.remoteDirectory.set(fileSyncer.gconfig.values['settings']['remote'])
 
         self.localLabel.grid(row=0, column=0, sticky='W')
         self.remoteLabel.grid(row=1, column=0, sticky='W')
@@ -255,6 +254,7 @@ class SettingsPage(tk.Frame):
 
     def onSaveButtonClick(self, controller):
         # TODO: Do this in the file syncer?
+        # TODO: Review this logic. Why do I get it twice?
         self.localDirectory.get()
         self.remoteDirectory.get()
 

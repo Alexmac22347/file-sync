@@ -47,8 +47,8 @@ def deleteFromRemote(fileList, remoteDirectory):
         print "gvfs-rm {}".format(fullEscapedRemotePath)
         call("gvfs-rm " + fullEscapedRemotePath, shell=True)
 
+        # Delete empty folder:
         remotePath = os.path.split(fullRemotePath)[0]
-
         if(len(os.listdir(remotePath)) == 0):
             os.rmdir(remotePath)
 
