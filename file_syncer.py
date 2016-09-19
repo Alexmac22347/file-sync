@@ -37,9 +37,8 @@ class file_syncer:
             self.latestRemoteFiles = disk_interface.getRemoteFileNames(self.gconfig.values['settings']['remote'])
 
         except config.NoConfigException:
-            print "Initializing configuration file"
-            self.gconfig.values['settings']['local'] = '/home/alex/Music/'
-            self.gconfig.values['settings']['remote'] = '/Card/Music/'
+            (self.gconfig.values['settings']['local'],
+            self.gconfig.values['settings']['remote']) = helper.promptUserForDirectories()
 
             self.cachedLocalFiles = disk_interface.getLocalFileNames(self.gconfig.values['settings']['local'])
             self.cachedRemoteFiles = disk_interface.getRemoteFileNames(self.gconfig.values['settings']['remote'])
