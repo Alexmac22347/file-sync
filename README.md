@@ -30,4 +30,3 @@ TODO:
 - Add support for USB mass storage
 - Allow window resizing
 - Detect file changes with md5?
-- Get rid of helper module
