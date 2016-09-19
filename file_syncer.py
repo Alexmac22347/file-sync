@@ -5,8 +5,19 @@ import disk_interface
 
 
 class file_syncer:
+    """The file_syncer handles the logic associated with syncing files
+    between a local and remote directory"""
 
     def __init__(self):
+        """Read the config file, and create local sets containing
+        filenames which were added/removed from remote/local
+
+        Also, if a file was added to local and remote, or removed
+        from local and remote, it will be updated in the config,
+        but won't appear on the user interface
+        
+        """
+
         self.gconfig = config.config()
         self.gconfig.values['files'] = {}
         self.gconfig.values['settings'] = {}
@@ -89,6 +100,17 @@ class file_syncer:
         self.gconfig.writeConfig()
 
     def onUpdateButtonClick(self, state, selectedFiles):
+        """If the update button is clicked, depending on the state, files will
+        be copied or removed from local or remote directory
+
+        Args:
+            state: The current state MainPage is in.
+            selectedFiles: A set containing all the files to be updated
+
+        Returns:
+            Nothing
+
+        """
 
         if state == selection_state.AddToRemote:
             disk_interface.copyToRemote(selectedFiles,

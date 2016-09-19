@@ -1,3 +1,5 @@
+""" A GUI which the user can interact with. Contains multiple frames"""
+
 import Tkinter as tk
 import selection_state
 import file_syncer
@@ -10,8 +12,11 @@ fileSyncer = file_syncer.globalFileSyncer
 
 
 class gui(tk.Tk):
+    """The Gui class which displays frames in a window"""
 
     def __init__(self, *args, **kwargs):
+        """Create the main window. The MainPage frame is then shown"""
+
         tk.Tk.__init__(self, *args, **kwargs)
 
         # This thing is not going to be resizable
@@ -32,23 +37,47 @@ class gui(tk.Tk):
         self.showFrame(MainPage)
 
     def showFrame(self, cont):
+        """Displays the frame "cont"
+
+        Args:
+            cont: The frame to be displayed
+
+        Returns:
+            Nothing
+
+        """
+
         frame = self.frames[cont]
         frame.tkraise()
         frame.showGUI()
 
 
 class MainPage(tk.Frame):
+    """This frame displays multiple files which the user can select.
 
-    # This is used to represent what part of the program we are in.
-    # It will help determine what to do when a button is pressed,
-    # and what files to display in the list box
+    Depending on the current state, locally added, locally removed,
+    remotely added, or remotely removed files will be displayed.
+    The user can the select what to do with these files (either
+    update or ignore). A settings button is also present
+
+    """
 
     def __init__(self, parent, controller):
+        """Initialize the page and show the appropriate widgets
+
+        The initial state is AddToRemote, which displays
+        locally added files which the user may want to
+        add to the remote directory.
+
+        """
+
         self.currentState = selection_state.AddToRemote
         tk.Frame.__init__(self, parent)
         self.initializeWidgets(controller)
 
     def initializeWidgets(self, controller):
+        """Create the widget objects"""
+
         # Create the grid layout manager
         self.grid()
 
@@ -97,6 +126,8 @@ class MainPage(tk.Frame):
             self, width=30, height=2, anchor='nw', fg='black', bg='white', relief='ridge', justify=tk.LEFT)
 
     def showGUI(self):
+        """Displays the widgets on the screen"""
+
         # These things here will always be visible
         # no matter what state we're in
         self.listbox.grid(row=0, column=0, sticky='NSEW')
@@ -167,9 +198,13 @@ class MainPage(tk.Frame):
 
     # Various event handlers
     def onSettingsButtonClick(self, controller):
+        """Show the settings page if settings button is pressed"""
+
         controller.showFrame(SettingsPage)
 
     def onUpdateButtonClick(self, selectAll):
+        """Update selected files when the update button is pressed""" 
+
         selectedFiles = []
 
         if selectAll:
@@ -184,10 +219,14 @@ class MainPage(tk.Frame):
         self.showGUI()
 
     def onSkipButtonClick(self):
+        """Skip to the next state if the skip button is pressed"""
+
         self._advanceState()
         self.showGUI()
 
     def _advanceState(self):
+        """Helper function to move to the next state"""
+
         if self.currentState == selection_state.AddToRemote:
             self.currentState = selection_state.RemoveFromRemote
         elif self.currentState == selection_state.RemoveFromRemote:
@@ -201,12 +240,21 @@ class MainPage(tk.Frame):
 class SettingsPage(tk.Frame):
 
     def __init__(self, parent, controller):
-        self.localDirectory = tk.StringVar()
-        self.remoteDirectory = tk.StringVar()
+        """Initialize the widgets and the string variables
+
+        The string variables are the strings contained in the
+        settings page boxed. These can be manipulated by the user
+
+        """
+
+        self.localDirectoryText = tk.StringVar()
+        self.remoteDirectoryText = tk.StringVar()
         tk.Frame.__init__(self, parent)
         self.initializeWidgets(controller)
 
     def initializeWidgets(self, controller):
+        """Create the widget objects"""
+
         # Create the grid layout manager
         self.grid()
 
@@ -217,9 +265,9 @@ class SettingsPage(tk.Frame):
             self, text="Remote:")
 
         self.localDirectoryBox = tk.Entry(
-            self, width=29, textvariable=self.localDirectory)
+            self, width=29, textvariable=self.localDirectoryText)
         self.remoteDirectoryBox = tk.Entry(
-            self, width=29, textvariable=self.remoteDirectory)
+            self, width=29, textvariable=self.remoteDirectoryText)
 
         # Create the cancel and save buttons
         self.cancelButton = tk.Button(
@@ -238,8 +286,10 @@ class SettingsPage(tk.Frame):
             self, width=36, height=2, anchor='s', fg='black', bg='white', relief='ridge')
 
     def showGUI(self):
-        self.localDirectory.set(fileSyncer.gconfig.values['settings']['local'])
-        self.remoteDirectory.set(fileSyncer.gconfig.values['settings']['remote'])
+        """Display the widget objects on the screen"""
+
+        self.localDirectoryText.set(fileSyncer.gconfig.values['settings']['local'])
+        self.remoteDirectoryText.set(fileSyncer.gconfig.values['settings']['remote'])
 
         self.localLabel.grid(row=0, column=0, sticky='W')
         self.remoteLabel.grid(row=1, column=0, sticky='W')
@@ -250,16 +300,21 @@ class SettingsPage(tk.Frame):
         self.infoBox.place(rely=1.0, relx=0.5, x=0, y=-10, anchor='center')
 
     def onCancelButtonClick(self, controller):
+        """Go back to the MainPage if cancel button is pressed"""
+
         controller.showFrame(MainPage)
 
     def onSaveButtonClick(self, controller):
+        """Save the users entry to the config file, the return
+        to the MainPage"""
+
         # TODO: Do this in the file syncer?
         # TODO: Review this logic. Why do I get it twice?
-        self.localDirectory.get()
-        self.remoteDirectory.get()
+        self.localDirectoryText.get()
+        self.remoteDirectoryText.get()
 
-        fileSyncer.gconfig.values['settings']['local'] = self.localDirectory.get()
-        fileSyncer.gconfig.values['settings']['remote'] = self.remoteDirectory.get()
+        fileSyncer.gconfig.values['settings']['local'] = self.localDirectoryText.get()
+        fileSyncer.gconfig.values['settings']['remote'] = self.remoteDirectoryText.get()
 
         fileSyncer.gconfig.writeConfig()
         controller.showFrame(MainPage)
