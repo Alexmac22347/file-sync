@@ -135,8 +135,7 @@ def _getFullPathToRemote(finalPath):
 
     deviceNames = os.listdir(PARTIALPATHTOREMOTE)
     if not _isSingleDeviceAvailable():
-        print "Error getting single MTP Device"
-        exit()
+        raise NoSingleMTPDeviceException
 
     return PARTIALPATHTOREMOTE + deviceNames[0] + finalPath
 
@@ -147,3 +146,8 @@ def _isSingleDeviceAvailable():
     if len(os.listdir(PARTIALPATHTOREMOTE)) == 1:
         return True
     return False
+
+
+class NoSingleMTPDeviceException(Exception):
+    """This exception is used when 0 or more than 1 MTP device is found"""
+    pass

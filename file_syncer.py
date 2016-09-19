@@ -49,6 +49,10 @@ class file_syncer:
 
             helper.writeConfigFilesToDisk(self.cachedLocalFiles, self.cachedRemoteFiles, self.gconfig)
 
+        except disk_interface.NoSingleMTPDeviceException:
+            print "Error getting single MTP device"
+            exit()
+
         self.addedToLocal = helper.getAddedFiles(
             self.cachedLocalFiles,
             self.latestLocalFiles)
