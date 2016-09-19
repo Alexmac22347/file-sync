@@ -15,7 +15,7 @@ class file_syncer:
         Also, if a file was added to local and remote, or removed
         from local and remote, it will be updated in the config,
         but won't appear on the user interface
-        
+
         """
 
         self.gconfig = config.config()
@@ -50,6 +50,7 @@ class file_syncer:
 
         except disk_interface.NoSingleMTPDeviceException:
             print "Error getting single MTP device"
+            helper.errorMessagePopup("Please plug in a single MTP device and try again\n")
             exit()
 
         self.addedToLocal = helper.getAddedFiles(

@@ -27,7 +27,6 @@ be reflected in the config.ini file, but will not appear in the user interface.
 
 
 TODO:
-- Display error if single phone not detected
 - Add support for USB mass storage
 - Allow window resizing
 - Detect file changes with md5?

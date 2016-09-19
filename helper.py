@@ -154,3 +154,14 @@ def promptUserForDirectories():
 
     popup.mainloop()
     return (localDirectoryText.get(), remoteDirectoryText.get())
+
+def errorMessagePopup(message):
+    popup = tk.Tk()
+
+    label = tk.Label(text=message)
+    label.pack()
+
+    exitButton = tk.Button(popup, text="Exit", command=popup.destroy)
+    exitButton.pack()
+
+    popup.mainloop()
