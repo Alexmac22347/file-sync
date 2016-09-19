@@ -2,6 +2,10 @@ import Tkinter as tk
 
 
 def promptUserForDirectories():
+    """Prompts user for local and remote directories.
+    Returns a tuple containing two strings. The first is 
+    the local directory and second is the remote directory"""
+
     popup = tk.Tk()
     popup.resizable(width=False, height=False)
     popup.geometry('270x100')
@@ -39,12 +43,14 @@ def promptUserForDirectories():
     return (localDirectoryText.get(), remoteDirectoryText.get())
 
 def errorMessagePopup(message):
+    """Display message. Also has a button to close the popup window"""
+
     popup = tk.Tk()
 
     label = tk.Label(text=message)
     label.pack()
 
-    exitButton = tk.Button(popup, text="Exit", command=popup.destroy)
+    exitButton = tk.Button(popup, text="Okay", command=popup.destroy)
     exitButton.pack()
 
     popup.mainloop()
