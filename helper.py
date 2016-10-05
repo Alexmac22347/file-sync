@@ -105,7 +105,8 @@ def escapeString(string):
             "!",
             "(",
             ")",
-            "'"
+            "'",
+            "\u2013"
             ]
 
     returnString = string
