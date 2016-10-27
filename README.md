@@ -27,7 +27,6 @@ be reflected in the config.ini file, but will not appear in the user interface.
 
 
 TODO:
-- Fix errors with filenames containing unicode
 - Copy over subdirectories first
 - Add support for USB mass storage
 - Allow window resizing

@@ -52,9 +52,11 @@ def copyToRemote(fileList, localDirectory, remoteDirectory):
 
     for filename in fileList:
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
+
+        # Encode as utf8 to convert unicode to ascii
+        fullEscapedRemotePath = helper.escapeString(fullRemotePath).encode('utf8')
         fullLocalPath = localDirectory + filename
-        fullEscapedRemotePathLocalPath = helper.escapeString(fullLocalPath)
+        fullEscapedRemotePathLocalPath = helper.escapeString(fullLocalPath).encode('utf8')
 
         remotePath = os.path.split(fullRemotePath)[0]
 
@@ -72,7 +74,8 @@ def deleteFromRemote(fileList, remoteDirectory):
 
     for filename in fileList:
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
+        # Encode as utf8 to convert unicode to ascii
+        fullEscapedRemotePath = helper.escapeString(fullRemotePath).encode('utf8')
 
         print "gvfs-rm {}".format(fullEscapedRemotePath)
         call("gvfs-rm " + fullEscapedRemotePath, shell=True)
@@ -90,9 +93,11 @@ def copyToLocal(fileList, remoteDirectory, localDirectory):
 
     for filename in fileList:
         fullLocalPath = localDirectory + filename
-        fullEscapedLocalPath = helper.escapeString(fullLocalPath)
+
+        # Encode as utf8 to convert unicode to ascii
+        fullEscapedLocalPath = helper.escapeString(fullLocalPath).encode('utf8')
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
-        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
+        fullEscapedRemotePath = helper.escapeString(fullRemotePath).encode('utf8')
 
         localPath = os.path.split(fullLocalPath)[0]
 
@@ -109,9 +114,10 @@ def deleteFromLocal(fileList, localDirectory):
 
     for filename in fileList:
         fullLocalPath = localDirectory + filename
-        fullEscapedLocalPath = helper.escapeString(fullLocalPath)
+        # Encode as utf8 to convert unicode to ascii
+        fullEscapedLocalPath = helper.escapeString(fullLocalPath).encode('utf8')
 
-        print "gvfs-rm {}".format(fullEscapedLocalPath)
+        print "gvfs-rm {}".format(str(fullEscapedLocalPath))
         call("gvfs-rm " + fullEscapedLocalPath, shell=True)
 
         localPath = os.path.split(fullLocalPath)[0]
