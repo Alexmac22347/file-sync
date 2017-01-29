@@ -61,7 +61,7 @@ def copyToRemote(fileList, localDirectory, remoteDirectory):
         remotePath = os.path.split(fullRemotePath)[0]
 
         if not os.path.exists(remotePath):
-            os.mkdir(remotePath)
+            os.makedirs(remotePath)
 
         print "gvfs-copy {} {}".format(fullEscapedRemotePathLocalPath, fullEscapedRemotePath)
         call("gvfs-copy " + fullEscapedRemotePathLocalPath + " " + fullEscapedRemotePath, shell=True)
@@ -102,7 +102,7 @@ def copyToLocal(fileList, remoteDirectory, localDirectory):
         localPath = os.path.split(fullLocalPath)[0]
 
         if not os.path.exists(localPath):
-            os.mkdir(localPath)
+            os.makedirs(localPath)
 
         print "gvfs-copy {} {}".format(fullEscapedRemotePath, fullEscapedLocalPath)
         call("gvfs-copy " + fullEscapedRemotePath + " " + fullEscapedLocalPath, shell=True)
