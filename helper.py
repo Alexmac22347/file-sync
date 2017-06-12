@@ -1,3 +1,5 @@
+import pipes
+
 def getAddedFiles(oldFilenames, newFilenames):
     """Returns a set containing files which are in newFilenames,
     but not in oldFilenames"""
@@ -96,21 +98,4 @@ def escapeString(string):
 
     """
 
-    escapeCharacters = [
-            ",",
-            "?",
-            "[",
-            "]",
-            " ",
-            "!",
-            "(",
-            ")",
-            "'",
-            ]
-
-    returnString = string
-
-    for char in escapeCharacters:
-        returnString = returnString.replace(char, "\\" + char)
-
-    return returnString
+    return pipes.quote(string)
