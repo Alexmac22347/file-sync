@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
-import gui
+import cli
 
 if __name__ == "__main__":
-    app = gui.gui(None)
-    app.title('File Sync')
-    app.mainloop()
+    app = cli.Cli()
+    app.run()

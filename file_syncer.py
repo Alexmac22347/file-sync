@@ -1,7 +1,6 @@
 import config
 import selection_state
 import helper
-import popup_windows
 import disk_interface
 
 
@@ -38,8 +37,8 @@ class file_syncer:
             self.latestRemoteFiles = disk_interface.getRemoteFileNames(self.gconfig.values['settings']['remote'])
 
         except config.NoConfigException:
-            (self.gconfig.values['settings']['local'],
-            self.gconfig.values['settings']['remote']) = popup_windows.promptUserForDirectories()
+            self.gconfig.values['settings']['local'] = raw_input("enter local directory\n")
+            self.gconfig.values['settings']['remote'] = raw_input("enter remote directory\n")
 
             self.cachedLocalFiles = disk_interface.getLocalFileNames(self.gconfig.values['settings']['local'])
             self.cachedRemoteFiles = disk_interface.getRemoteFileNames(self.gconfig.values['settings']['remote'])
@@ -51,7 +50,6 @@ class file_syncer:
 
         except disk_interface.NoSingleMTPDeviceException:
             print "Error getting single MTP device"
-            popup_windows.errorMessagePopup("Please plug in a single MTP device and try again\n")
             exit()
 
         self.addedToLocal = helper.getAddedFiles(
