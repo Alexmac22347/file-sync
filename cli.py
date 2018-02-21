@@ -49,13 +49,13 @@ class Cli:
             print_blue(prompt)
             display_files(file_list)
             while True:
-                try:
-                    do_action = strtobool(raw_input())
-                    if do_action:
-                        action(file_list)
+                do_action = raw_input()
+                if do_action == 'y':
+                    action(file_list)
                     break
-                except ValueError:
-                    print "Enter y/n"
+                elif do_action == 'n':
+                    break
+                print "Enter y/n"
             os.system('clear')
 
 

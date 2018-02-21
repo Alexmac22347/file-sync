@@ -54,9 +54,9 @@ def copyToRemote(fileList, localDirectory, remoteDirectory):
         fullRemotePath = _getFullPathToRemote(remoteDirectory + filename)
 
         # Encode as utf8 to convert unicode to ascii
-        fullEscapedRemotePath = helper.escapeString(fullRemotePath).encode('utf8')
+        fullEscapedRemotePath = helper.escapeString(fullRemotePath)
         fullLocalPath = localDirectory + filename
-        fullEscapedRemotePathLocalPath = helper.escapeString(fullLocalPath).encode('utf8')
+        fullEscapedRemotePathLocalPath = helper.escapeString(fullLocalPath)
 
         remotePath = os.path.split(fullRemotePath)[0]
 
